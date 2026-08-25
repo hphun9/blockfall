@@ -23,6 +23,7 @@
     "mode.dailyNote":   { "vi": "Mọi người nhận cùng một bàn cờ mỗi ngày.", "en": "Everyone gets the same board each day." },
 
     "over.title":       { "vi": "Hết nước đi", "en": "No moves left" },
+    "over.why":         { "vi": "Không còn chỗ nào đặt được ba khối còn lại.", "en": "None of the three remaining blocks fits anywhere." },
     "over.score":       { "vi": "Bạn được {score} điểm", "en": "You scored {score}" },
     "over.newBest":     { "vi": "Kỷ lục mới!", "en": "New best!" },
     "over.lines":       { "vi": "{lines} hàng đã phá", "en": "{lines} lines cleared" },

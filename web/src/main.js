@@ -284,6 +284,7 @@ class App {
 
   render() {
     this.view.mount(this.game.size);
+    this.el.board.classList.toggle('game-over', this.game.over);
     this.view.draw(this.game.cells);
     this.drawTray();
     this.updateHud();
@@ -335,9 +336,26 @@ class App {
 
   // --------------------------------------------------------------- sheets
 
-  finish() {
+  /**
+   * The run is over.
+   *
+   * Deliberately unhurried: the sheet does not appear the instant the last
+   * piece lands. The player needs a moment to see the board that beat them,
+   * and the tray is marked first so it is obvious WHY it ended — three pieces
+   * with nowhere to go, rather than a dialog appearing out of nowhere.
+   */
+  async finish() {
     this.drag.cancel();
+    if (this._finishing) return;
+    this._finishing = true;
+
+    // Every remaining piece is unplayable by definition; say so on the tray.
+    for (const slotEl of this.el.slots) {
+      if (!slotEl.classList.contains('empty')) slotEl.classList.add('dead');
+    }
+    this.el.board.classList.add('game-over');
     this.sound.over();
+
     const { isBest } = this.store.recordRun({
       score: this.game.score,
       lines: this.game.lines,
@@ -348,7 +366,10 @@ class App {
     });
     this.save();
     this.updateHud();
+
+    await new Promise((r) => setTimeout(r, 900));
     this.openSheet(this.buildOverSheet(isBest));
+    this._finishing = false;
   }
 
   buildOverSheet(isBest) {
@@ -356,6 +377,7 @@ class App {
     const wrap = document.createElement('div');
     wrap.innerHTML = `
       <h2>${t('over.title')}${isBest ? `<span class="badge-new">${t('over.newBest')}</span>` : ''}</h2>
+      <p>${t('over.why')}</p>
       <div class="final">
         <div><div class="k">${t('hud.score')}</div><div class="v">${this.game.score}</div></div>
         <div><div class="k">${t('hud.lines')}</div><div class="v">${this.game.lines}</div></div>

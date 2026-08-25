@@ -228,10 +228,27 @@ body::before {
   50%      { opacity: .62; }
 }
 
+/* An empty cell the piece would cover but cannot be dropped on — usually
+   because part of the piece hangs off the board. Tinted, never filled. */
 .cell.ghost-bad {
   background: rgba(var(--accent-rgb), .07);
   outline: 1px dashed var(--danger);
   outline-offset: -2px;
+}
+
+/* The block already sitting where the player is aiming.
+   Its own colour is left completely alone — hiding it would make the board lie
+   about what is underneath, and the player would have no idea why the piece
+   refuses to go down. A pulsing ring says "this one is in the way" instead. */
+.cell.blocked-by {
+  outline: 2px solid var(--danger);
+  outline-offset: -2px;
+  animation: blockedBy .55s ease-in-out infinite;
+  z-index: 1;
+}
+@keyframes blockedBy {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 90, 110, .5); filter: brightness(1); }
+  50%      { box-shadow: 0 0 12px 2px rgba(255, 90, 110, .55); filter: brightness(1.25); }
 }
 
 /* A line about to clear glows and lifts — the single most useful piece of
@@ -270,6 +287,15 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
   transition-duration: .45s;
   transition-timing-function: ease;
 }
+
+/* No moves left. The board desaturates and stills — the run is visibly over
+   before the summary appears, so the sheet confirms what the player can
+   already see rather than announcing it out of nowhere. */
+.board.game-over {
+  filter: saturate(.45) brightness(.82);
+  transition: filter .6s ease;
+}
+.board.game-over .cell { animation: none; }
 
 /* --------------------------------------------------------------------- tray */
 
@@ -349,6 +375,10 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
   /* The lift itself is animated from JS (WebAnimations) so it cannot be lost
      to a missed frame; this is just the resting state. */
   transform: translate(-50%, -50%);
+  /* Slightly see-through: the piece in hand must never fully hide the board it
+     is being aimed at, or the player loses sight of what is underneath at
+     exactly the moment they need it most. */
+  opacity: .88;
   filter: drop-shadow(0 10px 22px rgba(0, 0, 0, .4));
 }
 .drag-piece i {

@@ -360,6 +360,91 @@ test('perfect clears survive save and restore', () => {
   assert.equal(restored.perfectClears, game.perfectClears);
 });
 
+test('a real game always reaches a real ending', () => {
+  // Losing is the one outcome every run must be able to reach. If the tray
+  // refill or the stuck check regressed, a run could go on forever or end
+  // early — neither shows up in a unit test of a single move.
+  for (const seed of [1, 77, 512, 9001, 31337]) {
+    const game = new Game({ seed });
+    let drops = 0;
+    while (!game.over && drops < 2000) {
+      let played = false;
+      for (let slot = 0; slot < TRAY && !played; slot++) {
+        const piece = game.tray[slot];
+        if (!piece) continue;
+        const spots = game.placements(piece);
+        if (spots.length === 0) continue;
+        const [r, c] = spots[0];
+        game.place(slot, r, c);
+        played = true;
+        drops++;
+      }
+      if (!played) break;
+    }
+
+    assert.equal(game.over, true, `seed ${seed} never ended`);
+    assert.equal(game.isStuck(), true, `seed ${seed} ended while a move was still legal`);
+    assert.ok(drops > 5, `seed ${seed} ended after only ${drops} drops`);
+  }
+});
+
+test('the game is over exactly when no tray piece fits', () => {
+  const game = new Game({ seed: 50 });
+  // Fill everything but a single cell: only the 1-cell piece can be placed.
+  game.cells.fill(1);
+  game.cells[0] = 0;
+
+  game.tray = [PIECE_BY_ID.get('h2'), PIECE_BY_ID.get('sq2'), PIECE_BY_ID.get('h5')];
+  assert.equal(game.isStuck(), true, 'nothing fits the single hole');
+
+  game.tray[2] = PIECE_BY_ID.get('dot');
+  assert.equal(game.isStuck(), false, 'one fitting piece is enough');
+});
+
+/**
+ * A board that is stuck without being clearable.
+ *
+ * Filling the last hole of a completely full board clears the whole thing, so
+ * "fill everything but one cell" does NOT produce a loss. Instead this leaves a
+ * scattered set of holes too small and too separated for any piece to use, with
+ * no row or column ever completable.
+ */
+function makeDeadBoard(game) {
+  game.cells.fill(1);
+  // Poke isolated single holes on a diagonal: every row and every column keeps
+  // exactly one gap, so nothing can complete, and no two gaps are adjacent so
+  // only a 1-cell piece could ever be placed.
+  for (let r = 0; r < game.size; r++) {
+    game.cells[r * game.size + r] = 0;
+  }
+}
+
+test('a finished game refuses further moves', () => {
+  const game = new Game({ seed: 51 });
+  makeDeadBoard(game);
+  // No piece in this tray is a single cell, so none of them fits.
+  game.tray = [PIECE_BY_ID.get('h2'), PIECE_BY_ID.get('sq2'), PIECE_BY_ID.get('h5')];
+
+  assert.equal(game.isStuck(), true);
+  game.over = true;
+  assert.equal(game.place(1, 0, 0), null, 'no move is accepted after the end');
+});
+
+test('the end survives a save and restore', () => {
+  // The sheet is shown from the restored state, so `over` must persist.
+  const game = new Game({ seed: 52 });
+  makeDeadBoard(game);
+  game.tray = [PIECE_BY_ID.get('h2'), PIECE_BY_ID.get('sq2'), PIECE_BY_ID.get('h5')];
+  game.over = game.isStuck();
+  assert.equal(game.over, true);
+  game.score = 1234;
+
+  const restored = Game.fromJSON(JSON.parse(JSON.stringify(game.toJSON())));
+  assert.equal(restored.over, true);
+  assert.equal(restored.score, game.score);
+  assert.equal(restored.isStuck(), true, 'the restored board is still unplayable');
+});
+
 test('a long run stays consistent', () => {
   // Plays greedily to the end and checks nothing corrupts on the way.
   const game = new Game({ seed: 777 });

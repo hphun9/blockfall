@@ -12,7 +12,8 @@ export class BoardView {
     this.el = el;
     this.size = 0;
     this.cells = [];
-    this._ghost = [];
+    /** Cell -> the colour it had before the preview touched it (null = empty). */
+    this._touched = new Map();
   }
 
   /** Build (or rebuild) the grid for a given board size. */
@@ -66,6 +67,11 @@ export class BoardView {
 
   /** Paint the board from the engine's cell array. */
   draw(cells, animateIdx = null) {
+    // A full repaint is the authority on what the board holds, so any preview
+    // bookkeeping is void from here on — keeping it would let clearPreview
+    // later restore a colour the engine has since removed.
+    this._touched.clear();
+
     for (let i = 0; i < this.cells.length; i++) {
       const el = this.cells[i];
       const value = cells[i];
@@ -74,7 +80,7 @@ export class BoardView {
       } else if (el.dataset.c !== undefined) {
         delete el.dataset.c;
       }
-      el.classList.remove('ghost', 'ghost-bad', 'will-clear');
+      el.classList.remove('ghost', 'ghost-bad', 'will-clear', 'blocked-by');
     }
     if (animateIdx) {
       for (const i of animateIdx) {
@@ -89,8 +95,16 @@ export class BoardView {
   /**
    * Show where a dragged piece would land.
    *
-   * `valid` false still paints something — silence would leave the player
-   * guessing why the piece will not go down.
+   * Two rules matter here, and both were learned the hard way:
+   *
+   * 1. A cell that already holds a block is NEVER repainted. Covering it makes
+   *    the board lie about what is underneath, and the player is left guessing
+   *    why the piece will not go down. The occupied cell keeps its own colour
+   *    and gets a warning ring instead.
+   * 2. Anything this method touches is recorded so `clearPreview` can put it
+   *    back exactly. Painting `data-c` onto an empty cell and only removing the
+   *    class later left empty cells stuck showing a colour — a board that
+   *    looked full where it was not.
    */
   preview(piece, row, col, valid, clears) {
     this.clearPreview();
@@ -100,14 +114,23 @@ export class BoardView {
       const r = row + dr;
       const c = col + dc;
       if (r < 0 || c < 0 || r >= this.size || c >= this.size) continue;
-      const el = this.cells[r * this.size + c];
+
+      const idx = r * this.size + c;
+      const el = this.cells[idx];
+      const occupied = el.dataset.c !== undefined;
+
       if (valid) {
+        // A valid drop only ever covers empty cells, so painting is safe here.
+        this._remember(el, occupied);
         el.classList.add('ghost');
         el.dataset.c = String(piece.colour + 1);
-        this._ghost.push(el);
+      } else if (occupied) {
+        // The cell the player is colliding with: mark it, do not hide it.
+        this._remember(el, occupied);
+        el.classList.add('blocked-by');
       } else {
+        this._remember(el, occupied);
         el.classList.add('ghost-bad');
-        this._ghost.push(el);
       }
     }
 
@@ -115,25 +138,35 @@ export class BoardView {
       for (const r of clears.rows) {
         for (let c = 0; c < this.size; c++) {
           const el = this.cells[r * this.size + c];
+          this._remember(el, el.dataset.c !== undefined);
           el.classList.add('will-clear');
-          this._ghost.push(el);
         }
       }
       for (const c of clears.cols) {
         for (let r = 0; r < this.size; r++) {
           const el = this.cells[r * this.size + c];
+          this._remember(el, el.dataset.c !== undefined);
           el.classList.add('will-clear');
-          this._ghost.push(el);
         }
       }
     }
   }
 
+  /** Record a cell's pre-preview state once, so it can be restored exactly. */
+  _remember(el, hadColour) {
+    if (this._touched.has(el)) return;
+    this._touched.set(el, hadColour ? el.dataset.c : null);
+  }
+
   clearPreview() {
-    for (const el of this._ghost) {
-      el.classList.remove('ghost', 'ghost-bad', 'will-clear');
+    for (const [el, colour] of this._touched) {
+      el.classList.remove('ghost', 'ghost-bad', 'will-clear', 'blocked-by');
+      // Restore precisely: a cell that was empty must go back to empty, not
+      // keep the colour the preview painted on it.
+      if (colour === null) delete el.dataset.c;
+      else el.dataset.c = colour;
     }
-    this._ghost = [];
+    this._touched.clear();
   }
 
   /**
