@@ -43,11 +43,18 @@ body::before {
   z-index: 1;
   width: 100%;
   max-width: 520px;
-  padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  padding: max(10px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  min-height: 100%;
+  gap: 12px;
+  /* Fixed height, not min-height.
+     With min-height the column was free to grow past the viewport on a short
+     phone, and because the board holds a 1:1 aspect ratio it kept its full
+     width and simply overflowed — the tray then rendered on top of the board
+     and the footer on top of the tray. Pinning the height forces the board to
+     be the piece that gives way, which is what `min-height: 0` below allows. */
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Sits at the bottom of the column; the board above absorbs any extra height. */
@@ -159,11 +166,23 @@ body::before {
    is no dead space between them. */
 .board-wrap {
   position: relative;
-  flex: 0 0 auto;
+  /* The board is the flexible element: it shrinks to whatever height is left
+     after the HUD, goal bar, tray and footer have taken theirs. min-height: 0
+     is required or a flex item refuses to shrink below its content size, which
+     is exactly how the board came to overlap the tray on a 667px screen. */
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
 }
 
+/* The tray takes only what it needs; the board above gets the rest. Both were
+   flex:1 before, so on a short screen they split the space evenly and the
+   board ended up at 148px with 14px cells — technically not overlapping, but
+   unplayable. */
 .tray-wrap {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   min-height: 0;
@@ -171,9 +190,14 @@ body::before {
 
 .board {
   position: relative;
-  width: 100%;
+  /* Square, sized by whichever axis runs out first: width on a tall screen,
+     height on a short one. Getting the second case right is what stops the
+     board overflowing into the tray; capping at 100% width stops it growing
+     past the column when there is height to spare. */
+  height: 100%;
+  width: min(100%, calc(var(--board-h, 100%)));
   aspect-ratio: 1;
-  max-height: 100%;
+  max-width: 100%;
   margin: 0 auto;
   background: var(--board);
   border: 1px solid var(--boardBorder);
@@ -308,13 +332,12 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
 .tray {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  /* Tall enough for the 5-cell vertical bar at the shared tray scale, so no
-     piece has to be shrunk out of proportion to fit. */
-  height: 100%;
-  min-height: 118px;
-  max-height: 168px;
+  /* Scales with the viewport instead of being pinned at 168px: on a 667px
+     phone that fixed height was a quarter of the screen and starved the board.
+     The floor keeps the 5-cell bar legible on the smallest devices. */
+  height: clamp(96px, 17vh, 150px);
 }
 
 .slot {
@@ -374,25 +397,38 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
   pointer-events: none;
   z-index: 40;
 }
+/* Outer: moved by the pointer, nothing else. Kept on its own compositor layer
+   so following the finger never touches layout. */
 .drag-piece {
   position: absolute;
-  display: grid;
-  gap: var(--dgap, 4px);
-  /* The lift itself is animated from JS (WebAnimations) so it cannot be lost
-     to a missed frame; this is just the resting state. */
-  transform: translate(-50%, -50%);
+  left: 0;
+  top: 0;
+  transform: translate3d(-50%, -50%, 0);
+  will-change: transform;
   /* Slightly see-through: the piece in hand must never fully hide the board it
      is being aimed at, or the player loses sight of what is underneath at
      exactly the moment they need it most. */
-  opacity: .88;
-  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, .4));
+  opacity: .92;
 }
+/* Inner: the grid, and the only thing the lift animation scales. */
+.drag-piece-inner {
+  display: grid;
+  gap: var(--dgap, 4px);
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+/* Shadow on the CELLS, not on the whole piece.
+   A drop-shadow() over the group cast one large dark blur (40% black, 22px
+   spread, offset 10px) that visibly darkened every board cell the piece passed
+   over — reported as "a black thing covering the blocks underneath". Per-cell
+   box-shadows are tight enough to read as lift without staining the board. */
 .drag-piece i {
   display: block;
   border-radius: var(--cell-r, 8px);
   background: linear-gradient(150deg, var(--from), var(--to));
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .28);
 }
-.drag-piece i.gap { background: transparent; }
+.drag-piece i.gap { background: transparent; box-shadow: none; }
 
 /* ------------------------------------------------------------------ footer */
 

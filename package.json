@@ -7,6 +7,7 @@
   "scripts": {
     "test": "node --test web/tests/*.test.js",
     "serve": "node web/scripts/serve.mjs",
+    "check:layout": "node scripts/check-layout.cjs",
     "gen": "node scripts/generate-skins.mjs && node scripts/generate-strings.mjs",
     "gen:check": "node scripts/generate-skins.mjs --check && node scripts/generate-strings.mjs --check",
     "icons": "python3 scripts/generate-icons.py"

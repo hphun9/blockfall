@@ -60,11 +60,18 @@ export class DragController {
     const gap = this._gap();
     const touch = event.pointerType !== 'mouse';
 
+    // Two nested elements on purpose: the outer one is moved by the pointer,
+    // the inner one carries the grid and the lift scale. Keeping the two
+    // transforms on separate elements is what lets both run at once.
     const ghost = document.createElement('div');
     ghost.className = 'drag-piece';
-    ghost.style.setProperty('--dgap', `${gap}px`);
-    ghost.style.gridTemplateColumns = `repeat(${piece.w}, ${cell}px)`;
-    ghost.style.gridTemplateRows = `repeat(${piece.h}, ${cell}px)`;
+
+    const inner = document.createElement('div');
+    inner.className = 'drag-piece-inner';
+    inner.style.setProperty('--dgap', `${gap}px`);
+    inner.style.gridTemplateColumns = `repeat(${piece.w}, ${cell}px)`;
+    inner.style.gridTemplateRows = `repeat(${piece.h}, ${cell}px)`;
+    ghost.appendChild(inner);
 
     // The tray draws the long bars a little smaller than TRAY_SCALE so they
     // fit their slot; reading the real size keeps the lift continuous instead
@@ -82,27 +89,27 @@ export class DragController {
         }
         i.style.width = `${cell}px`;
         i.style.height = `${cell}px`;
-        ghost.appendChild(i);
+        inner.appendChild(i);
       }
     }
 
     this.opts.layer.appendChild(ghost);
 
-    // Animate the lift explicitly rather than relying on a class change and a
-    // forced reflow: the CSS route depends on the browser committing the start
-    // style in its own frame, and when it does not, the piece silently appears
-    // at full size with no lift at all. WebAnimations has no such ambiguity.
+    // The lift scales an INNER wrapper, not the ghost itself.
+    //
+    // The ghost's own transform is owned by _onMove (translate3d follows the
+    // pointer). Animating transform on the same element would fight that: for
+    // the 150ms of the lift the animation wins and the piece sits wherever the
+    // keyframes put it instead of under the finger.
     const fromScale = Math.min(1, trayCell / cell);
     ghost.style.transition = 'none';
-    ghost.animate(
-      [
-        { transform: `translate(-50%, -50%) scale(${fromScale})` },
-        { transform: 'translate(-50%, -50%) scale(1)' },
-      ],
+    inner.animate(
+      [{ transform: `scale(${fromScale})` }, { transform: 'scale(1)' }],
       { duration: 150, easing: 'cubic-bezier(.2, 1.2, .4, 1)', fill: 'backwards' }
     );
     slotEl.classList.add('dragging');
 
+    const floor = this._dragFloor();
     this.active = {
       slotIndex,
       slotEl,
@@ -113,6 +120,13 @@ export class DragController {
       cell,
       gap,
       lastCell: null,
+      // Measured once here rather than on every move: see _measureBoard.
+      metrics: this._measureBoard(cell, gap),
+      floor,
+      halfHeight: (piece.h * cell + (piece.h - 1) * gap) / 2,
+      frame: null,
+      wantX: 0,
+      wantY: 0,
     };
 
     globalThis.addEventListener('pointermove', this._onMove, { passive: false });
@@ -136,6 +150,31 @@ export class DragController {
     return r.top - 6;
   }
 
+  /**
+   * Measure the board once per drag.
+   *
+   * _hitTest used to call getBoundingClientRect() and getComputedStyle() on
+   * every pointermove. Both force style/layout work, and on a phone that is
+   * the difference between a piece that glides and one that stutters. Nothing
+   * here can change mid-drag except through a resize, which cancels the drag.
+   */
+  _measureBoard(cell, gap) {
+    const board = this.opts.board;
+    const rect = board.getBoundingClientRect();
+    const pad = parseFloat(getComputedStyle(board).paddingLeft) || 0;
+    const step = cell + gap;
+    return {
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      bottom: rect.bottom,
+      step,
+      originX: rect.left + pad + cell / 2,
+      originY: rect.top + pad + cell / 2,
+      n: this.opts.getSize(),
+    };
+  }
+
   _onMove(event) {
     const a = this.active;
     if (!a || event.pointerId !== a.pointerId) return;
@@ -151,16 +190,30 @@ export class DragController {
     // a block is physically covering them. The piece is anchored at its centre,
     // so clamping its centre keeps its bottom edge above the controls while the
     // drop target itself is unaffected: the board is above this line anyway.
-    const floor = this._dragFloor();
-    if (floor != null) {
-      const half = (a.piece.h * a.cell + (a.piece.h - 1) * a.gap) / 2;
-      y = Math.min(y, floor - half);
+    if (a.floor != null) {
+      y = Math.min(y, a.floor - a.halfHeight);
     }
 
-    a.ghost.style.left = `${x}px`;
-    a.ghost.style.top = `${y}px`;
+    a.wantX = x;
+    a.wantY = y;
 
-    const target = this._hitTest(x, y, a.piece, a.cell, a.gap);
+    // Coalesce to one write per frame. Pointer events fire faster than the
+    // screen refreshes — on a 120Hz phone with a high-rate digitiser there can
+    // be several per frame — and writing style on each one is wasted work that
+    // shows up as jitter.
+    if (a.frame == null) {
+      a.frame = requestAnimationFrame(() => {
+        a.frame = null;
+        const cur = this.active;
+        if (!cur) return;
+        // translate3d rather than left/top: the former is a compositor-only
+        // change, the latter re-runs layout for the whole page every frame.
+        cur.ghost.style.transform =
+          `translate3d(${cur.wantX}px, ${cur.wantY}px, 0) translate(-50%, -50%)`;
+      });
+    }
+
+    const target = this._hitTest(x, y, a.piece, a.metrics);
     const key = target ? `${target.row},${target.col}` : null;
     if (key !== a.lastCell) {
       a.lastCell = key;
@@ -175,7 +228,7 @@ export class DragController {
 
     const x = event.clientX;
     const y = event.clientY - a.lift;
-    const target = this._hitTest(x, y, a.piece, a.cell, a.gap);
+    const target = this._hitTest(x, y, a.piece, a.metrics);
 
     this._end();
     if (target) this.opts.onDrop(a.slotIndex, target.row, target.col);
@@ -185,6 +238,8 @@ export class DragController {
   _end() {
     const a = this.active;
     if (!a) return;
+    // Drop any frame still queued, or it fires after the ghost is gone.
+    if (a.frame != null) cancelAnimationFrame(a.frame);
     a.ghost.remove();
     a.slotEl.classList.remove('dragging');
     globalThis.removeEventListener('pointermove', this._onMove);
@@ -221,15 +276,9 @@ export class DragController {
    * flooring means the piece snaps to the nearest cell instead of always the
    * one up-and-left, which is what makes placement feel accurate.
    */
-  _hitTest(x, y, piece, cell, gap) {
-    const board = this.opts.board;
-    const n = this.opts.getSize();
-    const rect = board.getBoundingClientRect();
-    const pad = parseFloat(getComputedStyle(board).paddingLeft) || 0;
-
-    const step = cell + gap;
-    const originX = rect.left + pad + cell / 2;
-    const originY = rect.top + pad + cell / 2;
+  _hitTest(x, y, piece, m) {
+    if (!m) return null;
+    const { step, originX, originY, n } = m;
 
     const col = Math.round((x - originX - ((piece.w - 1) * step) / 2) / step);
     const row = Math.round((y - originY - ((piece.h - 1) * step) / 2) / step);
@@ -239,8 +288,8 @@ export class DragController {
     // Reject a drop that is nowhere near the board at all, so releasing off to
     // the side cancels instead of snapping to an edge the player never aimed at.
     const slack = step * 1.6;
-    if (x < rect.left - slack || x > rect.right + slack) return null;
-    if (y < rect.top - slack || y > rect.bottom + slack) return null;
+    if (x < m.left - slack || x > m.right + slack) return null;
+    if (y < m.top - slack || y > m.bottom + slack) return null;
 
     return { row, col };
   }
