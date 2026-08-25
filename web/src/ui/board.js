@@ -47,6 +47,16 @@ export class BoardView {
     this.el.style.setProperty('--gap', `${gap}px`);
     this.el.style.setProperty('--board-pad', `${pad}px`);
     this.el.style.setProperty('--cell-r', `${Math.round(cell * rRatio)}px`);
+
+    // Remembered so the tray and the drag ghost can match the board exactly —
+    // one number, one source, no chance of the three drifting apart.
+    this.cellSize = cell;
+    this.gapSize = gap;
+  }
+
+  /** Board cell size in px. Zero until the board has been laid out. */
+  metrics() {
+    return { cell: this.cellSize ?? 0, gap: this.gapSize ?? 0 };
   }
 
   /** Re-measure after a resize or a skin change. */
@@ -126,15 +136,31 @@ export class BoardView {
     this._ghost = [];
   }
 
-  /** Run the clear animation, then hand back so the caller can repaint. */
+  /**
+   * Run the clear animation, then hand back so the caller can repaint.
+   *
+   * Cells fire in reading order with a small stagger, so the line visibly
+   * sweeps instead of blinking out all at once — the difference between the
+   * clear feeling like an event and feeling like a repaint.
+   */
   animateClear(indices) {
     return new Promise((resolve) => {
       if (!indices || indices.length === 0) { resolve(); return; }
-      for (const i of indices) this.cells[i].classList.add('clearing');
+      const ordered = [...indices].sort((a, b) => a - b);
+      const step = Math.min(26, 220 / ordered.length);
+      ordered.forEach((i, n) => {
+        const el = this.cells[i];
+        el.style.animationDelay = `${n * step}ms`;
+        el.classList.add('clearing');
+      });
+      const total = 340 + ordered.length * step;
       setTimeout(() => {
-        for (const i of indices) this.cells[i].classList.remove('clearing');
+        for (const i of ordered) {
+          this.cells[i].classList.remove('clearing');
+          this.cells[i].style.animationDelay = '';
+        }
         resolve();
-      }, 260);
+      }, total);
     });
   }
 
@@ -148,8 +174,45 @@ export class BoardView {
   }
 }
 
+/**
+ * How big a tray block is, relative to a board cell.
+ *
+ * Every tray piece is drawn at the SAME cell size — never scaled to fill its
+ * slot. Filling the slot is what breaks the player's sense of scale: a
+ * single-cell block would be drawn larger than a five-cell bar, so nothing in
+ * the tray tells you how much room a piece actually needs.
+ */
+export const TRAY_SCALE = 0.62;
+
+/**
+ * The cell size for a tray preview.
+ *
+ * Three slots across a phone screen leaves each one about 124px wide, and five
+ * cells at the shared scale need roughly 150px. Rather than shrink every piece
+ * to fit the longest one — which was the original bug, in a subtler form — only
+ * the oversized piece is scaled down, and only as far as it has to be.
+ *
+ * So a 1-, 2- or 3-cell piece is always drawn at exactly TRAY_SCALE of a board
+ * cell, which is what the eye actually calibrates against; the rare 4- and
+ * 5-long bars sit slightly smaller. The alternative keeps a perfect ratio for
+ * the bars and throws it away for everything else.
+ */
+export function trayCellSize(boardCell, slotEl, piece) {
+  const wanted = boardCell * TRAY_SCALE;
+  if (!slotEl || !slotEl.clientWidth || !piece) return wanted;
+
+  const gap = Math.max(2, wanted * 0.09);
+  const across = Math.max(piece.w, piece.h);
+  const roomW = slotEl.clientWidth - 14;
+  const roomH = slotEl.clientHeight - 14;
+  const room = Math.min(roomW, roomH);
+
+  const fits = (room - gap * (across - 1)) / across;
+  return Math.max(7, Math.min(wanted, fits));
+}
+
 /** Draw the three tray slots. */
-export function renderTray(slots, tray, fitsAnywhere) {
+export function renderTray(slots, tray, fitsAnywhere, boardCell) {
   slots.forEach((slotEl, i) => {
     const piece = tray[i];
     slotEl.replaceChildren();
@@ -162,19 +225,15 @@ export function renderTray(slots, tray, fitsAnywhere) {
     slotEl.removeAttribute('aria-disabled');
     if (!fitsAnywhere(piece)) slotEl.classList.add('dead');
 
-    // Size the preview to the slot rather than to a fixed number, so a block
-    // fills the space it is given on a large phone instead of floating in the
-    // middle of it — and so the 5-long bar still fits on a small one.
-    const box = Math.max(piece.w, piece.h);
-    const avail = Math.max(48, Math.min(slotEl.clientWidth, slotEl.clientHeight) - 22);
-    const gap = 3;
-    const px = Math.max(9, Math.floor((avail - gap * (box - 1)) / box));
+    const px = trayCellSize(boardCell, slotEl, piece);
+    const gap = Math.max(2, px * 0.09);
 
     const grid = document.createElement('div');
     grid.className = 'piece';
     grid.style.gridTemplateColumns = `repeat(${piece.w}, ${px}px)`;
+    grid.style.gap = `${gap}px`;
     grid.style.setProperty('--pc', `${px}px`);
-    grid.style.setProperty('--pr', `${Math.max(3, Math.round(px * 0.24))}px`);
+    grid.style.setProperty('--pr', `${Math.max(2, px * 0.24)}px`);
 
     const occupied = new Set(piece.cells.map(([r, c]) => `${r},${c}`));
     for (let r = 0; r < piece.h; r++) {
@@ -186,5 +245,10 @@ export function renderTray(slots, tray, fitsAnywhere) {
       }
     }
     slotEl.appendChild(grid);
+
+    // A freshly dealt tray pops in, staggered, so a refill reads as an event
+    // rather than the pieces silently changing.
+    grid.style.animationDelay = `${i * 55}ms`;
+    grid.classList.add('deal-in');
   });
 }

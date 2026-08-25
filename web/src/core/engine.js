@@ -30,6 +30,8 @@ const LINE_BASE = 10;
 /** Consecutive drops that clear something build a multiplier. */
 const COMBO_STEP = 0.5;
 const COMBO_MAX = 4;
+/** Emptying the whole board is worth a real bonus — it is genuinely hard. */
+const PERFECT_BONUS = 200;
 
 export class Game {
   constructor(options = {}) {
@@ -53,6 +55,7 @@ export class Game {
     this.lines = 0;
     this.combo = 0;
     this.bestCombo = 0;
+    this.perfectClears = 0;
     this.over = false;
 
     this.undoBudget = undoBudget;
@@ -218,6 +221,15 @@ export class Game {
       this.combo = 0;
     }
 
+    // Sweeping the board completely is the rarest thing a player can do here,
+    // and it happens without any announcement unless we look for it. Checked
+    // after the clear has been applied, and paid for properly.
+    const perfect = lineCount > 0 && this.filled() === 0;
+    if (perfect) {
+      this.perfectClears++;
+      gained += PERFECT_BONUS;
+    }
+
     this.score += Math.round(gained);
     this.lastClear = lineCount > 0
       ? { rows: clearRows, cols: clearCols, cells: [...cleared], combo: this.combo }
@@ -233,6 +245,7 @@ export class Game {
       cols: clearCols,
       gained: Math.round(gained),
       combo: this.combo,
+      perfect,
       over: this.over,
     };
   }
@@ -245,6 +258,7 @@ export class Game {
     this.drops = snap.drops;
     this.lines = snap.lines;
     this.combo = snap.combo;
+    this.perfectClears = snap.perfectClears;
     this.tray = snap.tray.map((id) => (id ? PIECE_BY_ID.get(id) : null));
     this.rng.state = snap.rngState;
     this.over = false;
@@ -263,6 +277,7 @@ export class Game {
       drops: this.drops,
       lines: this.lines,
       combo: this.combo,
+      perfectClears: this.perfectClears,
       tray: this.tray.map((p) => (p ? p.id : null)),
       rngState: this.rng.state,
     });
@@ -308,6 +323,7 @@ export class Game {
       lines: this.lines,
       combo: this.combo,
       bestCombo: this.bestCombo,
+      perfectClears: this.perfectClears,
       over: this.over,
       undoLeft: this.undoLeft,
       undoBudget: this.undoBudget,
@@ -331,6 +347,7 @@ export class Game {
     game.lines = data.lines;
     game.combo = data.combo ?? 0;
     game.bestCombo = data.bestCombo ?? 0;
+    game.perfectClears = data.perfectClears ?? 0;
     game.over = !!data.over;
     game.undoLeft = data.undoLeft ?? game.undoBudget;
     game.usedUndo = !!data.usedUndo;

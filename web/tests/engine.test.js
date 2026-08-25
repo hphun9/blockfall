@@ -82,14 +82,19 @@ test('a row and a column can clear on the same drop', () => {
 });
 
 test('clearing two lines pays more than twice one line', () => {
+  // Both boards keep a stray block so neither run collects the perfect-clear
+  // bonus — otherwise the single-line case sweeps the board and wins on a
+  // bonus that has nothing to do with the comparison.
   const one = new Game({ seed: 7 });
   fillRowExcept(one, 0, 0);
+  one.cells[5 * SIZE + 5] = 1;
   one.tray[0] = PIECE_BY_ID.get('dot');
   const gainedOne = one.place(0, 0, 0).gained;
 
   const two = new Game({ seed: 7 });
   fillRowExcept(two, 0, 0);
   for (let r = 1; r < SIZE; r++) two.cells[r * SIZE] = 1;
+  two.cells[5 * SIZE + 5] = 1;
   two.tray[0] = PIECE_BY_ID.get('dot');
   const gainedTwo = two.place(0, 0, 0).gained;
 
@@ -304,6 +309,55 @@ test('placing into an empty slot does nothing', () => {
   const game = new Game({ seed: 18 });
   game.tray[1] = null;
   assert.equal(game.place(1, 0, 0), null);
+});
+
+test('sweeping the board clean is reported and paid for', () => {
+  // The rarest thing a player can do; the UI hangs a skin change off it, so a
+  // silent regression here would quietly remove a whole reward.
+  const game = new Game({ seed: 40 });
+  game.cells.fill(0);
+  // One row short of complete, with nothing else on the board.
+  for (let c = 0; c < SIZE - 1; c++) game.cells[c] = 1;
+  game.tray[0] = PIECE_BY_ID.get('dot');
+
+  const res = game.place(0, 0, SIZE - 1);
+  assert.equal(res.perfect, true, 'the board is empty afterwards');
+  assert.equal(game.filled(), 0);
+  assert.equal(game.perfectClears, 1);
+  assert.ok(res.gained > 200, 'the bonus is actually paid');
+});
+
+test('an ordinary clear is not a perfect clear', () => {
+  const game = new Game({ seed: 41 });
+  game.cells.fill(0);
+  for (let c = 0; c < SIZE - 1; c++) game.cells[c] = 1;
+  game.cells[3 * SIZE + 3] = 1; // one stray block left over
+  game.tray[0] = PIECE_BY_ID.get('dot');
+
+  const res = game.place(0, 0, SIZE - 1);
+  assert.equal(res.perfect, false);
+  assert.equal(game.perfectClears, 0);
+  assert.ok(game.filled() > 0);
+});
+
+test('a drop that clears nothing on an empty board is not perfect', () => {
+  // filled() === 0 must never be enough on its own.
+  const game = new Game({ seed: 42 });
+  game.cells.fill(0);
+  game.tray[0] = PIECE_BY_ID.get('dot');
+  const res = game.place(0, 4, 4);
+  assert.equal(res.perfect, false);
+});
+
+test('perfect clears survive save and restore', () => {
+  const game = new Game({ seed: 43 });
+  game.cells.fill(0);
+  for (let c = 0; c < SIZE - 1; c++) game.cells[c] = 1;
+  game.tray[0] = PIECE_BY_ID.get('dot');
+  game.place(0, 0, SIZE - 1);
+
+  const restored = Game.fromJSON(JSON.parse(JSON.stringify(game.toJSON())));
+  assert.equal(restored.perfectClears, game.perfectClears);
 });
 
 test('a long run stays consistent', () => {

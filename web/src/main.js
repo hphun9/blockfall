@@ -10,7 +10,7 @@ import { Game, SIZE } from './core/engine.js';
 import { dailySeed, randomSeed, utcDateKey } from './core/rng.js';
 import { Storage } from './core/storage.js';
 import { I18n, detectLocale, SUPPORTED } from './i18n.js';
-import { BoardView, renderTray } from './ui/board.js';
+import { BoardView, renderTray, trayCellSize } from './ui/board.js';
 import { DragController } from './ui/drag.js';
 import { Sound } from './ui/sound.js';
 
@@ -65,6 +65,8 @@ class App {
       board: this.el.board,
       getSize: () => this.game.size,
       getPiece: (slot) => this.game.tray[slot],
+      trayCellFor: (slot, slotEl) =>
+        trayCellSize(this.view.metrics().cell, slotEl, this.game.tray[slot]),
       onDrop: (slot, row, col) => this.handleDrop(slot, row, col),
       onHover: (slot, row, col) => this.handleHover(slot, row, col),
       onCancel: () => this.view.clearPreview(),
@@ -79,14 +81,14 @@ class App {
     requestAnimationFrame(() => {
       this.view.refresh();
       this.view.draw(this.game.cells);
-      renderTray(this.el.slots, this.game.tray, (p) => this.game.fitsAnywhere(p));
+      this.drawTray();
     });
 
     // A resize changes the cell geometry the drag maths depends on, and the
     // tray previews are sized from their slot, so both must be redrawn.
     globalThis.addEventListener('resize', () => {
       this.view.refresh();
-      renderTray(this.el.slots, this.game.tray, (p) => this.game.fitsAnywhere(p));
+      this.drawTray();
     });
     // A new UTC day while the tab sits open must not leave a stale daily board.
     globalThis.addEventListener('focus', () => this.checkDateRollover());
@@ -191,7 +193,14 @@ class App {
       const withPiece = beforeCells.slice();
       for (const i of result.placed) withPiece[i] = piece.colour + 1;
       this.view.draw(withPiece, result.placed);
-      this.sound.clear(result.rows.length + result.cols.length, result.combo);
+      // Start the celebration alongside the clear rather than after it, so the
+      // board is already glowing while the last cells collapse.
+      if (result.perfect) {
+        this.el.board.classList.add('perfect');
+        this.sound.perfect();
+      } else {
+        this.sound.clear(result.rows.length + result.cols.length, result.combo);
+      }
       this.bumpScore();
       this.updateHud();
       this.popScore(result);
@@ -203,12 +212,44 @@ class App {
     }
 
     this.view.draw(this.game.cells);
-    renderTray(this.el.slots, this.game.tray, (p) => this.game.fitsAnywhere(p));
+    this.drawTray();
     this.updateHud();
     this.save();
     this.busy = false;
 
+    // Sweeping the board is rare enough to deserve marking. Rotating the skin
+    // is the reward: the game visibly changes around the player, which keeps a
+    // long session from looking the same all the way through — and it costs
+    // nothing, because the skins already exist.
+    if (result.perfect) await this.celebratePerfect();
+
     if (this.game.over) this.finish();
+  }
+
+  /**
+   * Board swept clean: rotate to the next skin.
+   *
+   * The glow and the sound already started back in handleDrop, alongside the
+   * clear itself; this finishes the moment by changing the palette.
+   *
+   * The rotation is deliberate rather than random — a random pick can hand
+   * back the skin you already had, which makes the reward look broken.
+   */
+  async celebratePerfect() {
+    this.toast(this.i18n.t('toast.perfect'));
+
+    const current = SKINS.indexOf(this.settings.skin);
+    const next = SKINS[(current + 1) % SKINS.length];
+
+    await new Promise((r) => setTimeout(r, 260));
+    this.applySkin(next);
+    this.settings.skin = next;
+    this.store.saveSettings(this.settings);
+    this.view.refresh();
+    this.view.draw(this.game.cells);
+    this.drawTray();
+
+    setTimeout(() => this.el.board.classList.remove('perfect'), 1200);
   }
 
   undo() {
@@ -226,10 +267,25 @@ class App {
 
   // -------------------------------------------------------------- render
 
+  /**
+   * Redraw the tray at the board's scale.
+   *
+   * Goes through one place so the tray can never be drawn without the board
+   * metric — that mismatch is exactly what made the previews the wrong size.
+   */
+  drawTray() {
+    renderTray(
+      this.el.slots,
+      this.game.tray,
+      (p) => this.game.fitsAnywhere(p),
+      this.view.metrics().cell
+    );
+  }
+
   render() {
     this.view.mount(this.game.size);
     this.view.draw(this.game.cells);
-    renderTray(this.el.slots, this.game.tray, (p) => this.game.fitsAnywhere(p));
+    this.drawTray();
     this.updateHud();
     this.el.modeClassic.setAttribute('aria-pressed', String(this.mode === 'classic'));
     this.el.modeDaily.setAttribute('aria-pressed', String(this.mode === 'daily'));

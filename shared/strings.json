@@ -45,6 +45,7 @@
     "toast.undo":       { "vi": "Đã hoàn tác", "en": "Undone" },
     "toast.noUndo":     { "vi": "Hết lượt hoàn tác", "en": "No undos left" },
     "toast.dailyDone":  { "vi": "Bàn hôm nay đã xong — quay lại vào ngày mai", "en": "Today's board is done — come back tomorrow" },
+    "toast.perfect":    { "vi": "Sạch bàn! +200 · đổi giao diện", "en": "Board cleared! +200 · new skin" },
 
     "combo.x":          { "vi": "Chuỗi x{n}", "en": "Combo x{n}" },
     "clear.single":     { "vi": "Sạch!", "en": "Clear!" },

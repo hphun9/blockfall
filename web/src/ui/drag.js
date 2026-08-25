@@ -57,6 +57,11 @@ export class DragController {
     ghost.style.gridTemplateColumns = `repeat(${piece.w}, ${cell}px)`;
     ghost.style.gridTemplateRows = `repeat(${piece.h}, ${cell}px)`;
 
+    // The tray draws the long bars a little smaller than TRAY_SCALE so they
+    // fit their slot; reading the real size keeps the lift continuous instead
+    // of starting those pieces at the wrong scale and jumping.
+    const trayCell = this.opts.trayCellFor?.(slotIndex, slotEl) ?? cell * 0.62;
+
     const occupied = new Set(piece.cells.map(([r, c]) => `${r},${c}`));
     for (let r = 0; r < piece.h; r++) {
       for (let c = 0; c < piece.w; c++) {
@@ -73,6 +78,20 @@ export class DragController {
     }
 
     this.opts.layer.appendChild(ghost);
+
+    // Animate the lift explicitly rather than relying on a class change and a
+    // forced reflow: the CSS route depends on the browser committing the start
+    // style in its own frame, and when it does not, the piece silently appears
+    // at full size with no lift at all. WebAnimations has no such ambiguity.
+    const fromScale = Math.min(1, trayCell / cell);
+    ghost.style.transition = 'none';
+    ghost.animate(
+      [
+        { transform: `translate(-50%, -50%) scale(${fromScale})` },
+        { transform: 'translate(-50%, -50%) scale(1)' },
+      ],
+      { duration: 150, easing: 'cubic-bezier(.2, 1.2, .4, 1)', fill: 'backwards' }
+    );
     slotEl.classList.add('dragging');
 
     this.active = {

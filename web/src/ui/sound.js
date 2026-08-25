@@ -86,6 +86,17 @@ export class Sound {
     }
   }
 
+  /**
+   * Board swept clean. A rising arpeggio — the longest, brightest sound in the
+   * game, because it marks the rarest thing a player can do.
+   */
+  perfect() {
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+    notes.forEach((f, i) => {
+      this._tone(f, { duration: 0.26, gain: 0.055, type: 'sine', delay: i * 0.075 });
+    });
+  }
+
   /** End of a run: a short descending pair, not a punishment. */
   over() {
     this._tone(330, { duration: 0.18, gain: 0.045, type: 'sine', to: 246 });

@@ -148,9 +148,9 @@ body::before {
 
 /* ------------------------------------------------------------------- board */
 
-/* The board sits directly under the HUD and the tray directly above the
-   footer; any leftover height on a tall screen falls between the two rather
-   than being split around the board, which would leave it floating. */
+/* The board sits directly under the HUD; the tray takes the remaining height
+   and sits against the footer, so the controls stay in thumb reach and there
+   is no dead space between them. */
 .board-wrap {
   position: relative;
   flex: 0 0 auto;
@@ -159,7 +159,7 @@ body::before {
 .tray-wrap {
   flex: 1 1 auto;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   min-height: 0;
 }
 
@@ -192,31 +192,83 @@ body::before {
   box-shadow: var(--glow);
 }
 
-.cell.drop-in { animation: dropIn .18s ease-out; }
+/* A block landing: a short squash, the way a real object settles. Overshooting
+   slightly on the way in is what makes a placement feel like it has weight
+   rather than simply appearing. */
+.cell.drop-in { animation: dropIn .22s cubic-bezier(.22, 1.4, .4, 1); }
 @keyframes dropIn {
-  from { transform: scale(.6); opacity: .35; }
-  to   { transform: scale(1); opacity: 1; }
+  0%   { transform: scale(.55); opacity: .3; }
+  55%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
 }
 
-.cell.clearing { animation: clearOut .26s ease-in forwards; }
+/* Clearing: flash white, expand, then collapse. The flash is what sells the
+   moment — a fade alone is too quiet for the best thing that happens in the
+   game. Cells go one after another along the line (delay set in JS) so the
+   clear sweeps rather than blinking all at once. */
+.cell.clearing {
+  animation: clearOut .34s cubic-bezier(.3, 0, .2, 1) forwards;
+  z-index: 2;
+}
 @keyframes clearOut {
-  0%   { transform: scale(1); }
-  35%  { transform: scale(1.12); filter: brightness(1.5); }
-  100% { transform: scale(.2); opacity: 0; }
+  0%   { transform: scale(1); filter: brightness(1); }
+  22%  { transform: scale(1.22); filter: brightness(2.6) saturate(.4); }
+  45%  { transform: scale(1.1); filter: brightness(1.8); }
+  100% { transform: scale(.15) rotate(8deg); opacity: 0; filter: brightness(1.4); }
 }
 
 /* Preview while dragging: valid landing spot, and the lines it would clear. */
 .cell.ghost {
   background: linear-gradient(150deg, var(--from), var(--to));
-  opacity: .42;
+  opacity: .5;
+  animation: ghostPulse 1.1s ease-in-out infinite;
 }
+@keyframes ghostPulse {
+  0%, 100% { opacity: .42; }
+  50%      { opacity: .62; }
+}
+
 .cell.ghost-bad {
   background: rgba(var(--accent-rgb), .07);
   outline: 1px dashed var(--danger);
   outline-offset: -2px;
 }
+
+/* A line about to clear glows and lifts — the single most useful piece of
+   feedback in the game, so it is the loudest. */
 .cell.will-clear {
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 0 12px rgba(var(--accent-rgb), .55);
+  animation: willClear .7s ease-in-out infinite;
+}
+@keyframes willClear {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+/* Board swept clean: the board glows through the clear, holds while the skin
+   rotates, then settles. Long enough to cover both, so the celebration reads
+   as one moment rather than two half-finished ones. */
+.board.perfect {
+  animation: perfectFlash 1.4s cubic-bezier(.3, 0, .2, 1);
+}
+@keyframes perfectFlash {
+  0%   { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .6); transform: scale(1); }
+  18%  { box-shadow: 0 0 60px 14px rgba(var(--accent-rgb), .55); transform: scale(1.025); }
+  55%  { box-shadow: 0 0 46px 10px rgba(var(--accent-rgb), .4); transform: scale(1.012); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); transform: scale(1); }
+}
+
+/* The whole app cross-fades when the skin rotates, so the new palette arrives
+   as a transition rather than a flicker.
+   Cells are excluded on purpose: they change constantly during play, and a
+   450ms fade on every placement would make the board feel sluggish. They pick
+   up the new palette on the repaint that follows the skin change instead. */
+body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
+  transition-property: background, background-color, border-color, color, box-shadow;
+  transition-duration: .45s;
+  transition-timing-function: ease;
 }
 
 /* --------------------------------------------------------------------- tray */
@@ -226,14 +278,15 @@ body::before {
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   width: 100%;
-  /* Grows into whatever height is left over, so the block previews get bigger
-     on a tall screen instead of sitting small in an oversized slot. */
+  /* Tall enough for the 5-cell vertical bar at the shared tray scale, so no
+     piece has to be shrunk out of proportion to fit. */
   height: 100%;
-  min-height: 104px;
-  max-height: 180px;
+  min-height: 118px;
+  max-height: 168px;
 }
 
 .slot {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -242,27 +295,37 @@ body::before {
   padding: 10px;
   cursor: grab;
   touch-action: none;
-  transition: background .15s, opacity .2s, transform .12s;
+  transition: background .15s, opacity .2s, transform .12s, border-color .2s;
+}
+.slot:hover:not(.empty):not(.dead) {
+  background: var(--surfaceStrong);
+  border-color: rgba(var(--accent-rgb), .35);
 }
 .slot:active { cursor: grabbing; }
 .slot.empty { opacity: .25; cursor: default; }
-.slot.dragging { opacity: .3; }
+/* The slot keeps its size while a piece is out, so the tray never reflows
+   mid-drag and the other two pieces stay where the player last saw them. */
+.slot.dragging .piece { opacity: .22; transform: scale(.9); }
 /* A piece that fits nowhere is dimmed — the player should see the trap coming
    rather than discover it by trying all three. */
 .slot.dead { opacity: .34; }
-.slot.dead::after {
-  content: '';
-  position: absolute;
-}
 
 .piece {
   display: grid;
-  gap: 3px;
   /* Centre the shape inside its slot: a grid whose columns are wider than the
      shape needs would otherwise leave it hugging one edge. */
   justify-content: center;
   align-content: center;
+  transition: opacity .18s, transform .18s;
 }
+
+/* A newly dealt tray drops in, one piece after another. */
+.piece.deal-in { animation: dealIn .34s cubic-bezier(.2, 1.25, .4, 1) backwards; }
+@keyframes dealIn {
+  0%   { transform: translateY(-14px) scale(.7); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+
 .piece i {
   display: block;
   border-radius: var(--pr, 4px);
@@ -283,8 +346,10 @@ body::before {
   position: absolute;
   display: grid;
   gap: var(--dgap, 4px);
+  /* The lift itself is animated from JS (WebAnimations) so it cannot be lost
+     to a missed frame; this is just the resting state. */
   transform: translate(-50%, -50%);
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .35));
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, .4));
 }
 .drag-piece i {
   display: block;
