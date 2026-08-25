@@ -95,18 +95,18 @@
         "gapRatio": 0.075,
         "glow": false,
         "blur": 0,
-        "bounce": 0.34
+        "bounce": 0.42
       },
       "colors": {
         "bg": "#FFF8F4",
         "text": "#5E4A52",
-        "textMuted": "#A38F97",
+        "textMuted": "#8C737C",
         "surface": "#FFFFFFE6",
         "surfaceStrong": "#FFFFFF",
         "border": "#EBD9D2",
-        "board": "#FFFFFF",
-        "boardBorder": "#F3E2DB",
-        "cell": "#F7ECE7",
+        "board": "#FFFCFA",
+        "boardBorder": "#E9D5CD",
+        "cell": "#E6D3CC",
         "accent": "#FF7AA2",
         "accentInk": "#FFFFFF",
         "accentAlt": "#7ED0EC",
@@ -145,14 +145,14 @@
         }
       ],
       "blocks": [
-        "#FF9EB8",
-        "#FFD48A",
-        "#A8E6CF",
-        "#B5D8FF",
-        "#D8B4FE",
-        "#FFB3A7",
-        "#9FE0D8",
-        "#FFC9E0"
+        "#FF6E93",
+        "#F59A16",
+        "#2BBE8C",
+        "#5AACF7",
+        "#B57BF5",
+        "#FF8A6B",
+        "#17ABA8",
+        "#FF7ABE"
       ]
     },
     {
@@ -180,9 +180,9 @@
         "surface": "#FFFFFF66",
         "surfaceStrong": "#FFFFFFB3",
         "border": "#FFFFFFB3",
-        "board": "#FFFFFF59",
-        "boardBorder": "#FFFFFFA6",
-        "cell": "#FFFFFF4D",
+        "board": "#FFFFFF66",
+        "boardBorder": "#FFFFFFB3",
+        "cell": "#C9D4E8B3",
         "accent": "#5B6BFF",
         "accentInk": "#FFFFFF",
         "accentAlt": "#F472B6",

@@ -225,10 +225,33 @@ body::before {
   transition: none;
 }
 
-/* A filled cell carries data-c; its gradient comes from skins.css. */
+/* A filled cell carries data-c; its gradient comes from skins.css.
+   Drawn as a solid object rather than a flat swatch: a bright top edge, a
+   darker bottom edge, an inset rim, and a soft sheen across the upper half.
+   This is what separates a block that sits ON the board from a sticker lying
+   flat against it. */
 .cell[data-c] {
-  background: linear-gradient(150deg, var(--from), var(--to));
-  box-shadow: var(--glow);
+  background:
+    linear-gradient(180deg,
+      var(--edge-hi, var(--from)) 0%,
+      var(--from) 22%,
+      var(--to) 78%,
+      var(--edge-lo, var(--to)) 100%);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, .55),
+    inset 0 -2px 0 var(--rim, rgba(0, 0, 0, .2)),
+    var(--glow);
+  overflow: hidden;
+}
+/* The sheen: a soft highlight over the top half, clipped to the rounded
+   corner so it follows the block's shape. */
+.cell[data-c]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .38) 0%, rgba(255, 255, 255, .06) 42%, transparent 62%);
+  pointer-events: none;
 }
 
 /* A block landing: a short squash, the way a real object settles. Overshooting
@@ -254,6 +277,46 @@ body::before {
   22%  { transform: scale(1.22); filter: brightness(2.6) saturate(.4); }
   45%  { transform: scale(1.1); filter: brightness(1.8); }
   100% { transform: scale(.15) rotate(8deg); opacity: 0; filter: brightness(1.4); }
+}
+
+/* Score that floats up off a cleared line.
+   The number arriving where the work happened, rather than only ticking over
+   in the HUD, is most of what makes a clear feel rewarding. */
+.pop {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: .01em;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .45), 0 0 18px var(--accent);
+  transform: translate(-50%, -50%);
+  animation: popUp .85s cubic-bezier(.2, .9, .3, 1) forwards;
+}
+.pop.big { font-size: 20px; }
+@keyframes popUp {
+  0%   { opacity: 0; transform: translate(-50%, -30%) scale(.6); }
+  18%  { opacity: 1; transform: translate(-50%, -55%) scale(1.15); }
+  40%  { transform: translate(-50%, -62%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -170%) scale(.95); }
+}
+
+/* Sparks thrown off a clearing cell. Purely decorative, so they are created
+   only when the board is not already busy with a bigger celebration. */
+.spark {
+  position: absolute;
+  z-index: 4;
+  width: 6px;
+  height: 6px;
+  border-radius: 99px;
+  pointer-events: none;
+  background: var(--spark, #fff);
+  animation: sparkFly .55s ease-out forwards;
+}
+@keyframes sparkFly {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2); }
 }
 
 /* Preview while dragging: valid landing spot, and the lines it would clear.
@@ -393,11 +456,25 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
 .piece i {
   display: block;
   border-radius: var(--pr, 4px);
-  background: linear-gradient(150deg, var(--from), var(--to));
   width: var(--pc, 15px);
   height: var(--pc, 15px);
+  background:
+    linear-gradient(180deg,
+      var(--edge-hi, var(--from)) 0%,
+      var(--from) 22%,
+      var(--to) 78%,
+      var(--edge-lo, var(--to)) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .5),
+    inset 0 -1.5px 0 var(--rim, rgba(0, 0, 0, .2));
 }
-.piece i.gap { background: transparent; }
+/* A gap in a tray piece is empty space, not a block: no fill, and no rim
+   either — the inset shadow was drawing a visible white outline around holes
+   in L, T and diagonal shapes. */
+.piece i.gap {
+  background: transparent;
+  box-shadow: none;
+}
 
 /* The block that follows the finger while dragging. */
 .drag-layer {
@@ -436,8 +513,17 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
 .drag-piece i {
   display: block;
   border-radius: var(--cell-r, 8px);
-  background: linear-gradient(150deg, var(--from), var(--to));
-  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .5), 0 0 18px -4px var(--from);
+  background:
+    linear-gradient(180deg,
+      var(--edge-hi, var(--from)) 0%,
+      var(--from) 22%,
+      var(--to) 78%,
+      var(--edge-lo, var(--to)) 100%);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, .55),
+    inset 0 -2px 0 var(--rim, rgba(0, 0, 0, .2)),
+    0 6px 16px -8px rgba(0, 0, 0, .5),
+    0 0 18px -4px var(--from);
 }
 .drag-piece i.gap { background: transparent; box-shadow: none; }
 

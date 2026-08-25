@@ -170,6 +170,43 @@ export class BoardView {
   }
 
   /**
+   * Throw a few sparks off the cleared cells.
+   *
+   * Capped hard: this fires on every clear, and a particle per cell on a
+   * multi-line clear would be dozens of elements for a 550ms effect.
+   */
+  sparks(indices, colour) {
+    if (!indices || !indices.length) return;
+    const wrap = this.el.parentElement;
+    if (!wrap) return;
+    const wrapRect = wrap.getBoundingClientRect();
+    const picked = indices.length <= 8
+      ? indices
+      : indices.filter((_, i) => i % Math.ceil(indices.length / 8) === 0);
+
+    for (const i of picked) {
+      const cell = this.cells[i];
+      if (!cell) continue;
+      const b = cell.getBoundingClientRect();
+      const cx = b.left + b.width / 2 - wrapRect.left;
+      const cy = b.top + b.height / 2 - wrapRect.top;
+      for (let k = 0; k < 3; k++) {
+        const el = document.createElement('i');
+        el.className = 'spark';
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 18 + Math.random() * 26;
+        el.style.left = `${cx}px`;
+        el.style.top = `${cy}px`;
+        el.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+        el.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+        if (colour) el.style.setProperty('--spark', colour);
+        wrap.appendChild(el);
+        setTimeout(() => el.remove(), 600);
+      }
+    }
+  }
+
+  /**
    * Run the clear animation, then hand back so the caller can repaint.
    *
    * Cells fire in reading order with a small stagger, so the line visibly

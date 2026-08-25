@@ -37,6 +37,9 @@
 [data-skin='nebula'] .drag-piece i[data-c='1'] {
   --from: #4adbf1;
   --to: #22D3EE;
+  --edge-hi: #7fe5f5;
+  --edge-lo: #1aa0b5;
+  --rim: rgba(21, 131, 148, .55);
   --glow: 0 0 14px rgba(34, 211, 238, .45);
 }
 [data-skin='nebula'] .cell[data-c='2'],
@@ -44,6 +47,9 @@
 [data-skin='nebula'] .drag-piece i[data-c='2'] {
   --from: #b874f8;
   --to: #A855F7;
+  --edge-hi: #cd9cfa;
+  --edge-lo: #8041bc;
+  --rim: rgba(104, 53, 153, .55);
   --glow: 0 0 14px rgba(168, 85, 247, .45);
 }
 [data-skin='nebula'] .cell[data-c='3'],
@@ -51,6 +57,9 @@
 [data-skin='nebula'] .drag-piece i[data-c='3'] {
   --from: #f68bc3;
   --to: #F472B6;
+  --edge-hi: #f9add5;
+  --edge-lo: #b9578a;
+  --rim: rgba(151, 71, 113, .55);
   --glow: 0 0 14px rgba(244, 114, 182, .45);
 }
 [data-skin='nebula'] .cell[data-c='4'],
@@ -58,6 +67,9 @@
 [data-skin='nebula'] .drag-piece i[data-c='4'] {
   --from: #5cc9f9;
   --to: #38BDF8;
+  --edge-hi: #8cd9fb;
+  --edge-lo: #2b90bc;
+  --rim: rgba(35, 117, 154, .55);
   --glow: 0 0 14px rgba(56, 189, 248, .45);
 }
 [data-skin='nebula'] .cell[data-c='5'],
@@ -65,6 +77,9 @@
 [data-skin='nebula'] .drag-piece i[data-c='5'] {
   --from: #59dbab;
   --to: #34D399;
+  --edge-hi: #89e5c4;
+  --edge-lo: #28a074;
+  --rim: rgba(32, 131, 95, .55);
   --glow: 0 0 14px rgba(52, 211, 153, .45);
 }
 [data-skin='nebula'] .cell[data-c='6'],
@@ -72,6 +87,9 @@
 [data-skin='nebula'] .drag-piece i[data-c='6'] {
   --from: #fccb4b;
   --to: #FBBF24;
+  --edge-hi: #fdda80;
+  --edge-lo: #bf911b;
+  --rim: rgba(156, 118, 22, .55);
   --glow: 0 0 14px rgba(251, 191, 36, .45);
 }
 [data-skin='nebula'] .cell[data-c='7'],
@@ -79,6 +97,9 @@
 [data-skin='nebula'] .drag-piece i[data-c='7'] {
   --from: #fc8b9b;
   --to: #FB7185;
+  --edge-hi: #fdadb8;
+  --edge-lo: #bf5665;
+  --rim: rgba(156, 70, 82, .55);
   --glow: 0 0 14px rgba(251, 113, 133, .45);
 }
 [data-skin='nebula'] .cell[data-c='8'],
@@ -86,19 +107,22 @@
 [data-skin='nebula'] .drag-piece i[data-c='8'] {
   --from: #98a1f9;
   --to: #818CF8;
+  --edge-hi: #b6bcfb;
+  --edge-lo: #626abc;
+  --rim: rgba(80, 87, 154, .55);
   --glow: 0 0 14px rgba(129, 140, 248, .45);
 }
 [data-skin='mochi'] {
   color-scheme: light;
   --bg: #FFF8F4;
   --text: #5E4A52;
-  --textMuted: #A38F97;
+  --textMuted: #8C737C;
   --surface: #FFFFFFE6;
   --surfaceStrong: #FFFFFF;
   --border: #EBD9D2;
-  --board: #FFFFFF;
-  --boardBorder: #F3E2DB;
-  --cell: #F7ECE7;
+  --board: #FFFCFA;
+  --boardBorder: #E9D5CD;
+  --cell: #E6D3CC;
   --accent: #FF7AA2;
   --accentInk: #FFFFFF;
   --accentAlt: #7ED0EC;
@@ -109,7 +133,7 @@
   --board-radius: 34px;
   --cell-radius-ratio: 0.3;
   --gap-ratio: 0.075;
-  --bounce: 0.34;
+  --bounce: 0.42;
   --font: 'Baloo 2', 'Segoe UI Rounded', 'Nunito', system-ui, sans-serif;
   --backdrop:
     radial-gradient(circle at 12% 12%, rgba(255, 211, 226, 0.85) 0%, rgba(255, 211, 226, 0) 62%),
@@ -120,58 +144,82 @@
 [data-skin='mochi'] .cell[data-c='1'],
 [data-skin='mochi'] .piece i[data-c='1'],
 [data-skin='mochi'] .drag-piece i[data-c='1'] {
-  --from: #ffafc5;
-  --to: #FF9EB8;
-  --glow: none;
+  --from: #ff88a6;
+  --to: #FF6E93;
+  --edge-hi: #ffabc0;
+  --edge-lo: #c25470;
+  --rim: rgba(158, 68, 91, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='mochi'] .cell[data-c='2'],
 [data-skin='mochi'] .piece i[data-c='2'],
 [data-skin='mochi'] .drag-piece i[data-c='2'] {
-  --from: #ffdc9f;
-  --to: #FFD48A;
-  --glow: none;
+  --from: #f7ac40;
+  --to: #F59A16;
+  --edge-hi: #f9c478;
+  --edge-lo: #ba7511;
+  --rim: rgba(152, 95, 14, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='mochi'] .cell[data-c='3'],
 [data-skin='mochi'] .piece i[data-c='3'],
 [data-skin='mochi'] .drag-piece i[data-c='3'] {
-  --from: #b8ebd8;
-  --to: #A8E6CF;
-  --glow: none;
+  --from: #51caa1;
+  --to: #2BBE8C;
+  --edge-hi: #84d9bc;
+  --edge-lo: #21906a;
+  --rim: rgba(27, 118, 87, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='mochi'] .cell[data-c='4'],
 [data-skin='mochi'] .piece i[data-c='4'],
 [data-skin='mochi'] .drag-piece i[data-c='4'] {
-  --from: #c2dfff;
-  --to: #B5D8FF;
-  --glow: none;
+  --from: #78bbf8;
+  --to: #5AACF7;
+  --edge-hi: #9fcffa;
+  --edge-lo: #4483bc;
+  --rim: rgba(56, 107, 153, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='mochi'] .cell[data-c='5'],
 [data-skin='mochi'] .piece i[data-c='5'],
 [data-skin='mochi'] .drag-piece i[data-c='5'] {
-  --from: #dfc2fe;
-  --to: #D8B4FE;
-  --glow: none;
+  --from: #c293f7;
+  --to: #B57BF5;
+  --edge-hi: #d4b2f9;
+  --edge-lo: #8a5dba;
+  --rim: rgba(112, 76, 152, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='mochi'] .cell[data-c='6'],
 [data-skin='mochi'] .piece i[data-c='6'],
 [data-skin='mochi'] .drag-piece i[data-c='6'] {
-  --from: #ffc1b7;
-  --to: #FFB3A7;
-  --glow: none;
+  --from: #ff9f86;
+  --to: #FF8A6B;
+  --edge-hi: #ffbba9;
+  --edge-lo: #c26951;
+  --rim: rgba(158, 86, 66, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='mochi'] .cell[data-c='7'],
 [data-skin='mochi'] .piece i[data-c='7'],
 [data-skin='mochi'] .drag-piece i[data-c='7'] {
-  --from: #b0e6df;
-  --to: #9FE0D8;
-  --glow: none;
+  --from: #41bab8;
+  --to: #17ABA8;
+  --edge-hi: #78cecd;
+  --edge-lo: #118280;
+  --rim: rgba(14, 106, 104, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='mochi'] .cell[data-c='8'],
 [data-skin='mochi'] .piece i[data-c='8'],
 [data-skin='mochi'] .drag-piece i[data-c='8'] {
-  --from: #ffd3e6;
-  --to: #FFC9E0;
-  --glow: none;
+  --from: #ff92ca;
+  --to: #FF7ABE;
+  --edge-hi: #ffb2d9;
+  --edge-lo: #c25d90;
+  --rim: rgba(158, 76, 118, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='prism'] {
   color-scheme: light;
@@ -181,9 +229,9 @@
   --surface: #FFFFFF66;
   --surfaceStrong: #FFFFFFB3;
   --border: #FFFFFFB3;
-  --board: #FFFFFF59;
-  --boardBorder: #FFFFFFA6;
-  --cell: #FFFFFF4D;
+  --board: #FFFFFF66;
+  --boardBorder: #FFFFFFB3;
+  --cell: #C9D4E8B3;
   --accent: #5B6BFF;
   --accentInk: #FFFFFF;
   --accentAlt: #F472B6;
@@ -207,54 +255,78 @@
 [data-skin='prism'] .drag-piece i[data-c='1'] {
   --from: #7986ff;
   --to: #5B6BFF;
-  --glow: none;
+  --edge-hi: #a0a9ff;
+  --edge-lo: #4551c2;
+  --rim: rgba(56, 66, 158, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='prism'] .cell[data-c='2'],
 [data-skin='prism'] .piece i[data-c='2'],
 [data-skin='prism'] .drag-piece i[data-c='2'] {
   --from: #2ecdb8;
   --to: #00C2A8;
-  --glow: none;
+  --edge-hi: #6bdccd;
+  --edge-lo: #009380;
+  --rim: rgba(0, 120, 104, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='prism'] .cell[data-c='3'],
 [data-skin='prism'] .piece i[data-c='3'],
 [data-skin='prism'] .drag-piece i[data-c='3'] {
   --from: #ff9f79;
   --to: #FF8A5B;
-  --glow: none;
+  --edge-hi: #ffbba0;
+  --edge-lo: #c26945;
+  --rim: rgba(158, 86, 56, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='prism'] .cell[data-c='4'],
 [data-skin='prism'] .piece i[data-c='4'],
 [data-skin='prism'] .drag-piece i[data-c='4'] {
   --from: #9486ff;
   --to: #7C6BFF;
-  --glow: none;
+  --edge-hi: #b3a9ff;
+  --edge-lo: #5e51c2;
+  --rim: rgba(77, 66, 158, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='prism'] .cell[data-c='5'],
 [data-skin='prism'] .piece i[data-c='5'],
 [data-skin='prism'] .drag-piece i[data-c='5'] {
   --from: #53c5f7;
   --to: #2DB8F5;
-  --glow: none;
+  --edge-hi: #85d6f9;
+  --edge-lo: #228cba;
+  --rim: rgba(28, 114, 152, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='prism'] .cell[data-c='6'],
 [data-skin='prism'] .piece i[data-c='6'],
 [data-skin='prism'] .drag-piece i[data-c='6'] {
   --from: #f47394;
   --to: #F2547D;
-  --glow: none;
+  --edge-hi: #f79cb4;
+  --edge-lo: #b8405f;
+  --rim: rgba(150, 52, 78, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='prism'] .cell[data-c='7'],
 [data-skin='prism'] .piece i[data-c='7'],
 [data-skin='prism'] .drag-piece i[data-c='7'] {
   --from: #75d192;
   --to: #57C77A;
-  --glow: none;
+  --edge-hi: #9edfb2;
+  --edge-lo: #42975d;
+  --rim: rgba(54, 123, 76, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }
 [data-skin='prism'] .cell[data-c='8'],
 [data-skin='prism'] .piece i[data-c='8'],
 [data-skin='prism'] .drag-piece i[data-c='8'] {
   --from: #f3b85e;
   --to: #F0A93B;
-  --glow: none;
+  --edge-hi: #f6cd8d;
+  --edge-lo: #b6802d;
+  --rim: rgba(149, 105, 37, .55);
+  --glow: 0 0 0 rgba(0, 0, 0, 0);
 }

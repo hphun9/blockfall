@@ -44,6 +44,17 @@ function lighten(hex, amount) {
   return `#${[r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
 }
 
+/** Mix toward black by `amount` (0..1). The counterpart to lighten(). */
+function darken(hex, amount) {
+  const raw = hex.replace('#', '');
+  const int = parseInt(raw.slice(0, 6), 16);
+  const mix = (channel) => Math.round(channel * (1 - amount));
+  const r = mix((int >> 16) & 0xff);
+  const g = mix((int >> 8) & 0xff);
+  const b = mix(int & 0xff);
+  return `#${[r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
 function skinBlock(skin) {
   const c = skin.colors;
   const g = skin.geometry;
@@ -88,7 +99,18 @@ function skinBlock(skin) {
     lines.push(`${where} {`);
     lines.push(`  --from: ${lighten(hex, 0.18)};`);
     lines.push(`  --to: ${hex};`);
-    lines.push(`  --glow: ${g.glow ? `0 0 14px rgba(${rgbTriplet(hex)}, .45)` : 'none'};`);
+    // A block is drawn as a solid object, not a flat swatch: a bright top
+    // edge, a darker bottom edge and a soft inner sheen. Flat gradients are
+    // what made the pastel skin read as stickers lying on the board rather
+    // than pieces sitting on it.
+    lines.push(`  --edge-hi: ${lighten(hex, 0.42)};`);
+    lines.push(`  --edge-lo: ${darken(hex, 0.24)};`);
+    lines.push(`  --rim: rgba(${rgbTriplet(darken(hex, 0.38))}, .55);`);
+    // `none` is not a legal entry inside a comma-separated box-shadow list —
+    // it invalidates the WHOLE declaration, which silently dropped the inset
+    // highlight and rim on every skin with glow turned off. A fully
+    // transparent shadow is the valid way to say "no glow here".
+    lines.push(`  --glow: ${g.glow ? `0 0 14px rgba(${rgbTriplet(hex)}, .45)` : '0 0 0 rgba(0, 0, 0, 0)'};`);
     lines.push('}');
   });
 

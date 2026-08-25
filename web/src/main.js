@@ -212,6 +212,9 @@ class App {
       this.bumpScore();
       this.updateHud();
       this.popScore(result);
+      // Sparks in the colour of the piece that caused the clear, so the
+      // celebration is visibly connected to the move the player just made.
+      this.view.sparks(result.cleared, this._pieceColour(piece));
       await this.view.animateClear(result.cleared);
     } else {
       this.view.draw(this.game.cells, result.placed);
@@ -394,6 +397,21 @@ class App {
     el.classList.add('bump');
   }
 
+  /**
+   * The palette colour a piece is drawn in, read from the live stylesheet.
+   *
+   * Read rather than duplicated in JS: the colours live in skins.json and are
+   * compiled into CSS, so any copy kept here would be a second source of truth
+   * that silently goes stale the moment a skin changes.
+   */
+  _pieceColour(piece) {
+    if (!piece) return null;
+    const probe = this.el.board.querySelector(`.cell[data-c='${piece.colour + 1}']`);
+    if (!probe) return null;
+    const value = getComputedStyle(probe).getPropertyValue('--to').trim();
+    return value || null;
+  }
+
   popScore(result) {
     const first = result.cleared[0];
     const at = this.view.cellCentre(first);
@@ -401,6 +419,9 @@ class App {
     const pop = document.createElement('div');
     pop.className = 'pop';
     const lineCount = result.rows.length + result.cols.length;
+    // A bigger clear gets bigger type: the reward should look different, not
+    // just say a larger number in the same voice.
+    if (lineCount >= 2) pop.classList.add('big');
     const label = lineCount >= 4 ? 'clear.quad'
       : lineCount === 3 ? 'clear.triple'
       : lineCount === 2 ? 'clear.double'
