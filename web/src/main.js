@@ -45,6 +45,8 @@ class App {
       dragLayer: $('#drag-layer'),
       toasts: $('#toasts'),
       boardWrap: document.querySelector('.board-wrap'),
+      replayCta: $('#replay-cta'),
+      replay: $('#btn-replay'),
     };
 
     this.view = new BoardView(this.el.board);
@@ -142,6 +144,7 @@ class App {
 
   bind() {
     this.el.newGame.addEventListener('click', () => this.newGame());
+    this.el.replay.addEventListener('click', () => this.newGame());
     this.el.undo.addEventListener('click', () => this.undo());
     this.el.settings.addEventListener('click', () => this.openSettings());
     this.el.howto.addEventListener('click', () => this.openHowTo());
@@ -282,9 +285,21 @@ class App {
     );
   }
 
+  /**
+   * Switch the board between playable and finished.
+   *
+   * One place owns both halves — the greyed-out board and the replay banner —
+   * so they can never disagree. They did once: the board stayed dimmed while
+   * nothing on screen offered a way to start again.
+   */
+  setGameOverUi(over) {
+    this.el.board.classList.toggle('game-over', over);
+    this.el.replayCta.hidden = !over;
+  }
+
   render() {
     this.view.mount(this.game.size);
-    this.el.board.classList.toggle('game-over', this.game.over);
+    this.setGameOverUi(this.game.over);
     this.view.draw(this.game.cells);
     this.drawTray();
     this.updateHud();
@@ -354,6 +369,7 @@ class App {
       if (!slotEl.classList.contains('empty')) slotEl.classList.add('dead');
     }
     this.el.board.classList.add('game-over');
+    this.el.replayCta.hidden = false;
     this.sound.over();
 
     const { isBest } = this.store.recordRun({
@@ -453,9 +469,7 @@ class App {
     for (const on of [true, false]) {
       const b = document.createElement('button');
       b.className = 'chip';
-      b.textContent = on
-        ? (this.i18n.locale === 'vi' ? 'Bật' : 'On')
-        : (this.i18n.locale === 'vi' ? 'Tắt' : 'Off');
+      b.textContent = this.i18n.t(on ? 'settings.on' : 'settings.off');
       b.setAttribute('aria-pressed', String((this.settings.sound !== false) === on));
       b.addEventListener('click', () => {
         this.settings.sound = on;

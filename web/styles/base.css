@@ -51,7 +51,13 @@ body::before {
 }
 
 /* Sits at the bottom of the column; the board above absorbs any extra height. */
-.foot { flex: 0 0 auto; }
+/* Breathing room above the footer: a dragged piece is taller than the tray row
+   it came from, and with the controls sitting flush underneath it visibly
+   overlapped them. */
+.foot {
+  flex: 0 0 auto;
+  padding-top: 14px;
+}
 
 /* ------------------------------------------------------------------ header */
 
@@ -596,4 +602,38 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
     animation-duration: .01ms !important;
     transition-duration: .01ms !important;
   }
+}
+
+
+/* Replay banner: sits over the finished board, so there is always a visible way
+   back into a game even after the summary sheet is dismissed. */
+.replay-cta {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 3;
+  border-radius: var(--board-radius, 18px);
+  background: var(--backdrop);
+  backdrop-filter: blur(2px);
+  animation: replayIn .35s ease both;
+}
+.replay-cta[hidden] { display: none; }
+.replay-cta-text {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: var(--text);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .5);
+}
+.replay-cta .btn {
+  min-width: 168px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .38);
+}
+@keyframes replayIn {
+  from { opacity: 0; transform: scale(.96); }
+  to   { opacity: 1; transform: none; }
 }

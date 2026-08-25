@@ -13,8 +13,17 @@
  * the landing zone stays visible while dragging.
  */
 
-const LIFT_TOUCH = 52; // px the piece floats above the fingertip
-const LIFT_MOUSE = 0;
+/**
+ * How far the dragged piece floats above the pointer.
+ *
+ * On touch the finger covers the target, so the piece is lifted clear of it.
+ * On a mouse the cursor is a point and hides nothing — but the piece still
+ * needs *some* lift, because a piece dropped low in the window otherwise
+ * overhangs the footer controls and buries the mode switch and the help
+ * button under a floating block.
+ */
+const LIFT_TOUCH = 52;
+const LIFT_MOUSE = 18;
 
 export class DragController {
   /**
@@ -113,13 +122,41 @@ export class DragController {
     this._onMove(event);
   }
 
+  /**
+   * The lowest the floating piece's bottom edge may reach.
+   *
+   * Measured from the footer rather than hard-coded, so it stays correct on any
+   * screen height. Returns null when there is no footer to protect.
+   */
+  _dragFloor() {
+    const foot = document.querySelector('.foot');
+    if (!foot) return null;
+    const r = foot.getBoundingClientRect();
+    if (!r.height) return null;
+    return r.top - 6;
+  }
+
   _onMove(event) {
     const a = this.active;
     if (!a || event.pointerId !== a.pointerId) return;
     event.preventDefault();
 
     const x = event.clientX;
-    const y = event.clientY - a.lift;
+    let y = event.clientY - a.lift;
+
+    // Keep the floating piece out of the footer.
+    //
+    // Without this the piece follows the pointer all the way down and sits on
+    // top of the mode switch and the help button — they look "sticky", because
+    // a block is physically covering them. The piece is anchored at its centre,
+    // so clamping its centre keeps its bottom edge above the controls while the
+    // drop target itself is unaffected: the board is above this line anyway.
+    const floor = this._dragFloor();
+    if (floor != null) {
+      const half = (a.piece.h * a.cell + (a.piece.h - 1) * a.gap) / 2;
+      y = Math.min(y, floor - half);
+    }
+
     a.ghost.style.left = `${x}px`;
     a.ghost.style.top = `${y}px`;
 

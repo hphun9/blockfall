@@ -63,6 +63,13 @@
 
     <div class="board-wrap">
       <div class="board" id="board" role="grid" aria-label="Bàn cờ"></div>
+      <!-- Shown only when the run has ended. The summary sheet is dismissible,
+           so without this there is no visible way back into a game once it is
+           closed — the board just sits there, greyed out and unplayable. -->
+      <div class="replay-cta" id="replay-cta" hidden>
+        <span class="replay-cta-text" data-i18n="over.title">Hết nước đi</span>
+        <button class="btn" id="btn-replay" data-i18n="btn.playAgain">Chơi lại</button>
+      </div>
     </div>
 
     <div class="tray-wrap">

@@ -4,7 +4,7 @@
 
 # Block Fall
 
-**Xếp khối, phá hàng.** Trò xếp hình trên lưới 8×8 — miễn phí, không quảng cáo, không theo dõi, chơi được khi không có mạng.
+**Place blocks, clear lines.** A grid puzzle — free, no ads, no tracking, plays offline.
 
 [![CI](https://github.com/hphun9/blockfall/actions/workflows/ci.yml/badge.svg)](https://github.com/hphun9/blockfall/actions/workflows/ci.yml)
 [![Deploy web](https://github.com/hphun9/blockfall/actions/workflows/pages.yml/badge.svg)](https://github.com/hphun9/blockfall/actions/workflows/pages.yml)
@@ -14,96 +14,99 @@
 
 ---
 
-## Chơi
+## Play
 
 ### ▶ [hphun9.github.io/blockfall](https://hphun9.github.io/blockfall/)
 
-Mở ra là chơi. Không cài đặt, không đăng ký. Thêm vào màn hình chính thì tắt mạng vẫn chơi được.
+Open it and play. No install, no account. Add it to your home screen and it works
+with the network off.
 
-### Chạy tại máy
+### Run it locally
 
 ```bash
 npm run serve      # http://localhost:8080
-npm test           # 27 bài kiểm tra luật chơi
+npm test           # 35 rule tests
 ```
 
-Không cần `npm install` — trò chơi không phụ thuộc thư viện nào.
+No `npm install` needed — the game has no dependencies.
 
-## Luật
+## Rules
 
-Mỗi lượt có ba khối. Kéo khối xuống bất cứ chỗ nào vừa; lấp đầy một hàng hoặc
-một cột thì hàng/cột đó biến mất. Khối **không xoay được**, nên mỗi nước đi là
-một quyết định. Hết chỗ đặt cả ba khối là kết thúc ván.
+Three blocks are offered at a time. Drag one anywhere it fits; filling a whole row
+or column clears it. Blocks **cannot be rotated**, so every placement is a decision.
+The run ends when none of the three remaining blocks fits anywhere.
 
-Không có đồng hồ, không có trọng lực. Thua là do tính sai, không phải do phản xạ
-chậm — đó là điểm hấp dẫn của thể loại này, và nó chỉ đúng nếu việc chia khối
-trung thực.
+No timer, no gravity. You lose by miscalculating, not by reacting too slowly — which
+is the appeal of the genre, and it only holds if the deal is honest.
 
-### Chia khối trung thực
+### An honest deal
 
-Đây là bài toán thiết kế thật sự. Chia ngẫu nhiên đều nhau thì bàn cờ sẽ đầy
-những khối S/Z khó xếp rồi tắc, và người chơi thua vì bộ chia chứ không phải vì
-mình — cảm giác đó rất tệ.
+This is the real design problem. Deal uniformly at random and the board fills with
+awkward S/Z pieces until it jams, and the player loses to the dealer rather than to
+themselves — which feels terrible.
 
-Hai cơ chế bảo vệ:
+Two safeguards:
 
-- **Bảng trọng số**: khối nhỏ, dễ xếp được chia thường xuyên; khối khó thì hiếm.
-- **Luật lượt bài**: một khay mới **bắt buộc** phải có ít nhất một khối đặt
-  được. Nếu không, engine chia lại (tối đa 12 lần).
+- **Weighted bag**: small, easy pieces are dealt often; awkward ones are rare.
+- **Tray rule**: a freshly dealt tray *must* contain at least one placeable piece.
+  If it doesn't, the engine reshuffles (up to 12 times).
 
-Khi bàn cờ đầy tới mức không gì cứu nổi, ván kết thúc — thất bại đó thuộc về
-người chơi, và tái hiện được từ hạt giống ngẫu nhiên.
+When the board is genuinely too full to save, the run ends — that loss belongs to the
+player, and it replays exactly from the seed.
 
-## Có gì trong đó
+## What's in it
 
-- **Ba giao diện** — *Nebula* neon vũ trụ, *Mochi* kẹo pastel, *Prism* kính mờ.
-  Đổi giữa chừng không làm gián đoạn ván đang chơi.
-- **Chế độ Hằng ngày** — mọi người nhận cùng một bàn cờ mỗi ngày, tới cả thứ tự
-  khối được chia.
-- **Ba lần hoàn tác mỗi ván**, và hoàn tác tua lại cả luồng ngẫu nhiên nên không
-  thể quay đi quay lại để lấy khối đẹp hơn.
-- **Chuỗi liên tiếp**: phá hàng nhiều lượt liền nhau được nhân điểm.
-- **Xem trước khi thả** — thấy trước khối sẽ nằm đâu và hàng nào sẽ bay.
-- **Khối không đặt được đâu cả thì bị làm mờ**, để thấy trước bẫy thay vì thử cả ba.
-- **Tiếng Việt và tiếng Anh**, tự nhận theo máy.
-- **Chơi offline** (cài được như ứng dụng), lưu ván đang chơi, mở lại là tiếp tục.
-- **Không quảng cáo, không tài khoản, không gửi gì đi đâu.** Âm thanh được tổng
-  hợp bằng WebAudio nên trang không gọi tới bên thứ ba nào cả.
+- **Three skins** — *Nebula* (neon space), *Mochi* (pastel candy), *Prism* (frosted
+  glass). Switching mid-run doesn't interrupt anything.
+- **Daily mode** — everyone gets the same board each day, down to the deal order.
+- **Three undos per run**, and undo rewinds the RNG stream too, so you can't
+  undo-redo your way to a better piece.
+- **Combos**: clearing on consecutive drops multiplies the score.
+- **Clear the whole board** and you get a bonus plus a skin rotation — the rarest
+  thing you can do here, so it's worth marking.
+- **Drop preview** — see where the piece lands and which lines it would clear.
+- **A piece that fits nowhere is dimmed**, so you see the trap coming instead of
+  discovering it by trying all three.
+- **Occupied cells are never covered** by the preview — the board never lies about
+  what's underneath.
+- **Vietnamese and English**, auto-detected from the device.
+- **Plays offline** (installable as an app), saves the run in progress.
+- **No ads, no accounts, nothing leaves the device.** Sound is synthesised with
+  WebAudio, so the page makes no third-party requests at all.
 
-## Cấu trúc
+## Layout
 
 ```
 shared/
-  skins.json       mọi màu sắc, bo góc, khoảng cách của ba giao diện
-  strings.json     mọi chữ hiển thị, tiếng Việt và tiếng Anh
+  skins.json       every colour, radius and spacing for the three skins
+  strings.json     every visible string, Vietnamese and English
 
 scripts/
   generate-skins.mjs     skins.json   -> web/styles/skins.css
   generate-strings.mjs   strings.json -> web/src/strings.gen.js
-  generate-icons.py      vẽ dấu hiệu nhận diện, icon PWA và ảnh bìa
+  generate-icons.py      draws the brand mark, PWA icons and social cover
 
-web/                không framework, không bundler, không phụ thuộc
-  src/core/         engine.js, pieces.js, rng.js, storage.js  (thuần, không đụng DOM)
+web/                no framework, no bundler, no dependencies
+  src/core/         engine.js, pieces.js, rng.js, storage.js  (pure, no DOM)
   src/ui/           board, drag, sound
-  styles/           base.css viết tay + skins.css sinh ra
+  styles/           hand-written base.css + generated skins.css
   tests/            node --test
 ```
 
-Lõi trò chơi không biết gì về trang web, và trang web không cài đặt luật nào —
-nhờ vậy toàn bộ luật chơi được 27 bài kiểm tra chạy không cần trình duyệt.
+The engine knows nothing about the page, and the page implements no rules — which is
+why all 35 rule tests run without a browser.
 
-## Nguồn gốc và giấy phép
+## Origin and licence
 
-Block Fall là một **bản dựng độc lập** của thể loại xếp khối trên lưới. Không có
-tệp mã nguồn, biểu định kiểu hay tài nguyên nào của trò chơi khác trong kho này.
-Luật chơi là *cơ chế trò chơi* — thứ mà bản quyền không bảo hộ; còn những gì
-được bảo hộ (mã nguồn, hình ảnh, câu chữ, bố cục) đều được viết riêng cho dự án
-này.
+Block Fall is an **independent implementation** of the grid block-placement genre. No
+source file, stylesheet or asset from any other game is present in this repository.
+The rules are *game mechanics*, which copyright does not protect; everything it does
+protect — code, art, copy, layout — was written for this project.
 
-Sinh khối ngẫu nhiên dùng thuật toán mulberry32 (Tommy Ettinger, phạm vi công
-cộng), chia sẻ với [Orbix](https://github.com/hphun9/orbix) để cả danh mục trò
-chơi dùng chung một bộ sinh đã được kiểm chứng.
+Block generation uses mulberry32 (Tommy Ettinger, public domain), shared with
+[Orbix](https://github.com/hphun9/orbix) so the whole catalogue relies on one
+well-tested generator.
 
-## Giấy phép
+## Licence
 
 [MIT](LICENSE) © 2026 hphun9.

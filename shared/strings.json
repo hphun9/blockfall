@@ -32,6 +32,8 @@
     "settings.title":   { "vi": "Cài đặt", "en": "Settings" },
     "settings.skin":    { "vi": "Giao diện", "en": "Skin" },
     "settings.sound":   { "vi": "Âm thanh", "en": "Sound" },
+    "settings.on":      { "vi": "Bật", "en": "On" },
+    "settings.off":     { "vi": "Tắt", "en": "Off" },
     "settings.language":{ "vi": "Ngôn ngữ", "en": "Language" },
     "settings.privacy": { "vi": "Không quảng cáo, không tài khoản, không gửi dữ liệu đi đâu.", "en": "No ads, no accounts, nothing sent anywhere." },
 
