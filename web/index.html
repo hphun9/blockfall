@@ -61,6 +61,17 @@
       </div>
     </section>
 
+    <!-- Always says what is being aimed at. Without it a run is an unbounded
+         slide with no way to tell 340 points from a good result. -->
+    <div class="goal" id="goal">
+      <div class="goal-line">
+        <span class="goal-name" id="goal-name">Khởi động</span>
+        <span class="goal-num" id="goal-num">0 / 150</span>
+      </div>
+      <div class="goal-track"><div class="goal-fill" id="goal-fill"></div></div>
+      <div class="goal-pips" id="goal-pips"></div>
+    </div>
+
     <div class="board-wrap">
       <div class="board" id="board" role="grid" aria-label="Bàn cờ"></div>
       <!-- Shown only when the run has ended. The summary sheet is dismissible,

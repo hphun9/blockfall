@@ -10,6 +10,7 @@ import { Game, SIZE } from './core/engine.js';
 import { dailySeed, randomSeed, utcDateKey } from './core/rng.js';
 import { Storage } from './core/storage.js';
 import { I18n, detectLocale, SUPPORTED } from './i18n.js';
+import { TIERS, tierFor, nextTier, tierProgress } from './core/goals.js';
 import { BoardView, renderTray, trayCellSize } from './ui/board.js';
 import { DragController } from './ui/drag.js';
 import { Sound } from './ui/sound.js';
@@ -47,6 +48,10 @@ class App {
       boardWrap: document.querySelector('.board-wrap'),
       replayCta: $('#replay-cta'),
       replay: $('#btn-replay'),
+      goalName: $('#goal-name'),
+      goalNum: $('#goal-num'),
+      goalFill: $('#goal-fill'),
+      goalPips: $('#goal-pips'),
     };
 
     this.view = new BoardView(this.el.board);
@@ -226,7 +231,35 @@ class App {
     // nothing, because the skins already exist.
     if (result.perfect) await this.celebratePerfect();
 
+    // Crossing a tier is the moment the run stops being an open-ended slide
+    // and becomes something you are visibly winning at, so it gets its own
+    // beat rather than passing silently inside the score.
+    if (result.tierUp) this.celebrateTier(result.tierUp);
+
     if (this.game.over) this.finish();
+  }
+
+  /**
+   * A goal tier fell.
+   *
+   * Deliberately lighter than the perfect-clear celebration: this happens up
+   * to five times a run, so it marks the moment without interrupting play.
+   */
+  celebrateTier(tier) {
+    const t = (k, v) => this.i18n.t(k, v);
+    const info = TIERS.find((x) => x.id === tier);
+    const last = tier === TIERS[TIERS.length - 1].id;
+
+    this.toast(last ? t('tier.final') : t('tier.reached', { name: t(info.key) }));
+    this.sound.tier(tier);
+
+    const bar = document.querySelector('.goal');
+    if (bar) {
+      bar.classList.remove('tier-up');
+      void bar.offsetWidth;
+      bar.classList.add('tier-up');
+      setTimeout(() => bar.classList.remove('tier-up'), 900);
+    }
   }
 
   /**
@@ -314,6 +347,44 @@ class App {
     this.el.best.textContent = String(Math.max(stats.best, this.game.score));
     this.el.lines.textContent = String(this.game.lines);
     this.el.undo.disabled = !this.game.canUndo();
+    this.updateGoal();
+  }
+
+  /**
+   * Redraw the goal bar.
+   *
+   * Shows the tier being worked toward and how close it is, plus a pip per
+   * tier so the whole ladder is visible at once — knowing there are five rungs
+   * and you are on the third is the part that makes a run feel winnable.
+   */
+  updateGoal() {
+    const t = (k, v) => this.i18n.t(k, v);
+    const score = this.game.score;
+    const next = nextTier(score);
+    const done = tierFor(score);
+
+    if (next) {
+      this.el.goalName.textContent = t(next.key);
+      this.el.goalNum.textContent = `${score} / ${next.score}`;
+      this.el.goalFill.style.width = `${Math.round(tierProgress(score) * 100)}%`;
+    } else {
+      // Past the last rung the bar stops being a target and becomes a badge.
+      this.el.goalName.textContent = t('tier.done');
+      this.el.goalNum.textContent = String(score);
+      this.el.goalFill.style.width = '100%';
+    }
+
+    // Pips are rebuilt only when the count of lit ones changes, so the CSS
+    // transition on each pip actually gets to run instead of being reset.
+    if (this._pipsLit !== done) {
+      this._pipsLit = done;
+      this.el.goalPips.replaceChildren(...TIERS.map((tier) => {
+        const pip = document.createElement('i');
+        pip.className = 'goal-pip' + (score >= tier.score ? ' on' : '');
+        pip.title = `${this.i18n.t(tier.key)} · ${tier.score}`;
+        return pip;
+      }));
+    }
   }
 
   bumpScore() {
@@ -390,10 +461,13 @@ class App {
 
   buildOverSheet(isBest) {
     const t = (k, v) => this.i18n.t(k, v);
+    const reached = tierFor(this.game.score);
+    const tierInfo = TIERS.find((x) => x.id === reached);
     const wrap = document.createElement('div');
     wrap.innerHTML = `
       <h2>${t('over.title')}${isBest ? `<span class="badge-new">${t('over.newBest')}</span>` : ''}</h2>
       <p>${t('over.why')}</p>
+      <p class="over-tier">${reached ? t('over.tierGot', { name: t(tierInfo.key) }) : t('over.tierNone')}</p>
       <div class="final">
         <div><div class="k">${t('hud.score')}</div><div class="v">${this.game.score}</div></div>
         <div><div class="k">${t('hud.lines')}</div><div class="v">${this.game.lines}</div></div>

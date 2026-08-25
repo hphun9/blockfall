@@ -97,6 +97,18 @@ export class Sound {
     });
   }
 
+  /**
+   * A goal tier fell: a two-note rise, pitched higher for each tier.
+   *
+   * Shorter and quieter than perfect(), because this fires up to five times a
+   * run and a full fanfare each time would wear out fast.
+   */
+  tier(n = 1) {
+    const base = 440 * Math.pow(2, (n - 1) / 12);
+    this._tone(base, { duration: 0.10, gain: 0.05, type: 'triangle' });
+    this._tone(base * 1.5, { duration: 0.16, gain: 0.05, type: 'triangle', delay: 0.08 });
+  }
+
   /** End of a run: a short descending pair, not a punishment. */
   over() {
     this._tone(330, { duration: 0.18, gain: 0.045, type: 'sine', to: 246 });

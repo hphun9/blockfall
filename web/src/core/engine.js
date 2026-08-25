@@ -18,6 +18,7 @@
 
 import { Rng, randomSeed } from './rng.js';
 import { drawPiece, PIECE_BY_ID } from './pieces.js';
+import { tierFor } from './goals.js';
 
 export const SIZE = 8;
 export const TRAY = 3;
@@ -56,6 +57,8 @@ export class Game {
     this.combo = 0;
     this.bestCombo = 0;
     this.perfectClears = 0;
+    /** Highest goal tier reached this run (0 = none yet). */
+    this.tier = 0;
     this.over = false;
 
     this.undoBudget = undoBudget;
@@ -230,7 +233,14 @@ export class Game {
       gained += PERFECT_BONUS;
     }
 
+    const tierBefore = tierFor(this.score);
     this.score += Math.round(gained);
+    // Crossing a tier is the one moment in a run that says "you are doing
+    // well" — reported so the UI can mark it rather than letting it slide by
+    // inside a number that only ever goes up.
+    const tierAfter = tierFor(this.score);
+    const tierUp = tierAfter > tierBefore ? tierAfter : 0;
+    if (tierUp) this.tier = tierAfter;
     this.lastClear = lineCount > 0
       ? { rows: clearRows, cols: clearCols, cells: [...cleared], combo: this.combo }
       : null;
@@ -246,6 +256,7 @@ export class Game {
       gained: Math.round(gained),
       combo: this.combo,
       perfect,
+      tierUp,
       over: this.over,
     };
   }
@@ -259,6 +270,7 @@ export class Game {
     this.lines = snap.lines;
     this.combo = snap.combo;
     this.perfectClears = snap.perfectClears;
+    this.tier = snap.tier;
     this.tray = snap.tray.map((id) => (id ? PIECE_BY_ID.get(id) : null));
     this.rng.state = snap.rngState;
     this.over = false;
@@ -278,6 +290,7 @@ export class Game {
       lines: this.lines,
       combo: this.combo,
       perfectClears: this.perfectClears,
+      tier: this.tier,
       tray: this.tray.map((p) => (p ? p.id : null)),
       rngState: this.rng.state,
     });
@@ -324,6 +337,7 @@ export class Game {
       combo: this.combo,
       bestCombo: this.bestCombo,
       perfectClears: this.perfectClears,
+      tier: this.tier,
       over: this.over,
       undoLeft: this.undoLeft,
       undoBudget: this.undoBudget,
@@ -348,6 +362,7 @@ export class Game {
     game.combo = data.combo ?? 0;
     game.bestCombo = data.bestCombo ?? 0;
     game.perfectClears = data.perfectClears ?? 0;
+    game.tier = data.tier ?? 0;
     game.over = !!data.over;
     game.undoLeft = data.undoLeft ?? game.undoBudget;
     game.usedUndo = !!data.usedUndo;

@@ -79,6 +79,23 @@ export const PIECES = [
   makePiece('s1', [[0, 0], [1, 0], [1, 1], [2, 1]], 2, 6),
   makePiece('z0', [[0, 0], [0, 1], [1, 1], [1, 2]], 2, 5),
   makePiece('z1', [[0, 1], [1, 0], [1, 1], [2, 0]], 2, 5),
+
+  // ---- diagonals: cells touching only at their corners ----------------
+  //
+  // These are the shapes the genre is known for and the ones this catalogue
+  // was missing. They play unlike anything above: every other piece is a
+  // solid blob that fills a contiguous patch, whereas a diagonal deliberately
+  // leaves gaps between its own cells. That forces a different read of the
+  // board — you stop hunting for a hole the piece fits into and start looking
+  // for a staircase it completes.
+  //
+  // Both slopes are included so neither direction is a dead end, and the
+  // 2-cell versions are common enough to be useful while the 3-cell ones stay
+  // rare: a 3-long diagonal needs a very specific board to be worth anything.
+  makePiece('d2a', [[0, 0], [1, 1]], 6, 4),
+  makePiece('d2b', [[0, 1], [1, 0]], 6, 4),
+  makePiece('d3a', [[0, 0], [1, 1], [2, 2]], 3, 7),
+  makePiece('d3b', [[0, 2], [1, 1], [2, 0]], 3, 7),
 ];
 
 export const PIECE_BY_ID = new Map(PIECES.map((p) => [p.id, p]));

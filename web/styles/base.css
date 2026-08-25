@@ -548,7 +548,9 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
 .toasts {
   position: fixed;
   left: 50%;
-  bottom: max(22px, env(safe-area-inset-bottom));
+  /* Clear of the footer controls: at the old 22px a toast sat directly on top
+     of the mode switch, hiding the very buttons it was reporting about. */
+  bottom: max(86px, calc(env(safe-area-inset-bottom) + 76px));
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
@@ -636,4 +638,75 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
 @keyframes replayIn {
   from { opacity: 0; transform: scale(.96); }
   to   { opacity: 1; transform: none; }
+}
+
+
+/* --- Goal bar -----------------------------------------------------------
+   Always on screen, directly under the score. A run used to be an unbounded
+   slide with no way to tell a good result from a poor one; this names the
+   next milestone and shows how close it is. */
+.goal {
+  flex: 0 0 auto;
+  padding: 8px 2px 10px;
+}
+.goal-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.goal-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: var(--text);
+}
+.goal-num {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--textMuted);
+}
+.goal-track {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.goal-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--accentAlt));
+  transition: width .35s cubic-bezier(.22, 1, .36, 1);
+}
+/* One pip per tier: the whole ladder at a glance, so a player can see there
+   are five rungs and which one they are on. */
+.goal-pips {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.goal-pip {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--border);
+  transition: background .3s, box-shadow .3s;
+}
+.goal-pip.on {
+  background: var(--accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+/* A tier just fell. */
+.goal.tier-up .goal-name { animation: tierPop .8s ease both; }
+.goal.tier-up .goal-track {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: box-shadow .3s;
+}
+@keyframes tierPop {
+  0%   { transform: none; }
+  30%  { transform: scale(1.12); color: var(--accent); }
+  100% { transform: none; }
 }
