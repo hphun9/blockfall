@@ -1,0 +1,16 @@
+{
+  "name": "Block Fall",
+  "short_name": "Block Fall",
+  "description": "Xếp khối, phá hàng. Miễn phí, không quảng cáo, chơi được khi không có mạng.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070B18",
+  "theme_color": "#070B18",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

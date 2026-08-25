@@ -1,0 +1,55 @@
+{
+  "$comment": "Every visible string, English and Vietnamese. Nothing user-facing is written inline in the source.",
+  "version": 1,
+  "locales": ["vi", "en"],
+  "strings": {
+    "app.title":        { "vi": "Block Fall", "en": "Block Fall" },
+    "app.tagline":      { "vi": "Xếp khối, phá hàng.", "en": "Drop blocks, clear lines." },
+
+    "hud.score":        { "vi": "Điểm", "en": "Score" },
+    "hud.best":         { "vi": "Kỷ lục", "en": "Best" },
+    "hud.lines":        { "vi": "Hàng", "en": "Lines" },
+    "hud.combo":        { "vi": "Chuỗi", "en": "Combo" },
+
+    "btn.newGame":      { "vi": "Ván mới", "en": "New game" },
+    "btn.undo":         { "vi": "Hoàn tác", "en": "Undo" },
+    "btn.settings":     { "vi": "Cài đặt", "en": "Settings" },
+    "btn.close":        { "vi": "Đóng", "en": "Close" },
+    "btn.playAgain":    { "vi": "Chơi lại", "en": "Play again" },
+    "btn.howTo":        { "vi": "Cách chơi", "en": "How to play" },
+
+    "mode.classic":     { "vi": "Tự do", "en": "Classic" },
+    "mode.daily":       { "vi": "Hằng ngày", "en": "Daily" },
+    "mode.dailyNote":   { "vi": "Mọi người nhận cùng một bàn cờ mỗi ngày.", "en": "Everyone gets the same board each day." },
+
+    "over.title":       { "vi": "Hết nước đi", "en": "No moves left" },
+    "over.score":       { "vi": "Bạn được {score} điểm", "en": "You scored {score}" },
+    "over.newBest":     { "vi": "Kỷ lục mới!", "en": "New best!" },
+    "over.lines":       { "vi": "{lines} hàng đã phá", "en": "{lines} lines cleared" },
+    "over.bestCombo":   { "vi": "Chuỗi cao nhất: {combo}", "en": "Best combo: {combo}" },
+
+    "settings.title":   { "vi": "Cài đặt", "en": "Settings" },
+    "settings.skin":    { "vi": "Giao diện", "en": "Skin" },
+    "settings.sound":   { "vi": "Âm thanh", "en": "Sound" },
+    "settings.language":{ "vi": "Ngôn ngữ", "en": "Language" },
+    "settings.privacy": { "vi": "Không quảng cáo, không tài khoản, không gửi dữ liệu đi đâu.", "en": "No ads, no accounts, nothing sent anywhere." },
+
+    "howto.title":      { "vi": "Cách chơi", "en": "How to play" },
+    "howto.1":          { "vi": "Kéo một khối từ khay xuống bàn cờ.", "en": "Drag a block from the tray onto the board." },
+    "howto.2":          { "vi": "Lấp đầy một hàng hoặc một cột để phá nó.", "en": "Fill a whole row or column to clear it." },
+    "howto.3":          { "vi": "Phá nhiều hàng cùng lúc được nhiều điểm hơn.", "en": "Clearing several lines at once scores more." },
+    "howto.4":          { "vi": "Khối không xoay được — hãy tính trước chỗ đặt.", "en": "Blocks do not rotate — plan where they go." },
+    "howto.5":          { "vi": "Hết chỗ đặt cả ba khối là kết thúc ván.", "en": "The run ends when no block fits." },
+
+    "toast.newGame":    { "vi": "Ván mới", "en": "New game" },
+    "toast.undo":       { "vi": "Đã hoàn tác", "en": "Undone" },
+    "toast.noUndo":     { "vi": "Hết lượt hoàn tác", "en": "No undos left" },
+    "toast.dailyDone":  { "vi": "Bàn hôm nay đã xong — quay lại vào ngày mai", "en": "Today's board is done — come back tomorrow" },
+
+    "combo.x":          { "vi": "Chuỗi x{n}", "en": "Combo x{n}" },
+    "clear.single":     { "vi": "Sạch!", "en": "Clear!" },
+    "clear.double":     { "vi": "Đúp!", "en": "Double!" },
+    "clear.triple":     { "vi": "Ba hàng!", "en": "Triple!" },
+    "clear.quad":       { "vi": "Tuyệt vời!", "en": "Superb!" }
+  }
+}

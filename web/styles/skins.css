@@ -1,0 +1,260 @@
+/* GENERATED FILE — do not edit by hand.
+ * Source: shared/skins.json
+ * Regenerate: node scripts/generate-skins.mjs
+ */
+
+[data-skin='nebula'] {
+  color-scheme: dark;
+  --bg: #070B18;
+  --text: #E9EDFF;
+  --textMuted: #8A97C2;
+  --surface: #FFFFFF0F;
+  --surfaceStrong: #FFFFFF1A;
+  --border: #FFFFFF1F;
+  --board: #0A1130B3;
+  --boardBorder: #FFFFFF17;
+  --cell: #FFFFFF0D;
+  --accent: #22D3EE;
+  --accentInk: #042028;
+  --accentAlt: #A855F7;
+  --danger: #FB7185;
+  --success: #34D399;
+  --overlay: #050914E6;
+  --accent-rgb: 34, 211, 238;
+  --board-radius: 28px;
+  --cell-radius-ratio: 0.22;
+  --gap-ratio: 0.075;
+  --bounce: 0;
+  --font: 'Space Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --backdrop:
+    radial-gradient(circle at 14.000000000000002% 10%, rgba(124, 58, 237, 0.38) 0%, rgba(124, 58, 237, 0) 62%),
+    radial-gradient(circle at 86% 24%, rgba(34, 211, 238, 0.26) 0%, rgba(34, 211, 238, 0) 55.00000000000001%),
+    radial-gradient(circle at 72% 88%, rgba(244, 114, 182, 0.22) 0%, rgba(244, 114, 182, 0) 60%),
+    radial-gradient(circle at 8% 82%, rgba(29, 78, 216, 0.26) 0%, rgba(29, 78, 216, 0) 57.99999999999999%);
+}
+[data-skin='nebula'] .cell[data-c='1'],
+[data-skin='nebula'] .piece i[data-c='1'],
+[data-skin='nebula'] .drag-piece i[data-c='1'] {
+  --from: #4adbf1;
+  --to: #22D3EE;
+  --glow: 0 0 14px rgba(34, 211, 238, .45);
+}
+[data-skin='nebula'] .cell[data-c='2'],
+[data-skin='nebula'] .piece i[data-c='2'],
+[data-skin='nebula'] .drag-piece i[data-c='2'] {
+  --from: #b874f8;
+  --to: #A855F7;
+  --glow: 0 0 14px rgba(168, 85, 247, .45);
+}
+[data-skin='nebula'] .cell[data-c='3'],
+[data-skin='nebula'] .piece i[data-c='3'],
+[data-skin='nebula'] .drag-piece i[data-c='3'] {
+  --from: #f68bc3;
+  --to: #F472B6;
+  --glow: 0 0 14px rgba(244, 114, 182, .45);
+}
+[data-skin='nebula'] .cell[data-c='4'],
+[data-skin='nebula'] .piece i[data-c='4'],
+[data-skin='nebula'] .drag-piece i[data-c='4'] {
+  --from: #5cc9f9;
+  --to: #38BDF8;
+  --glow: 0 0 14px rgba(56, 189, 248, .45);
+}
+[data-skin='nebula'] .cell[data-c='5'],
+[data-skin='nebula'] .piece i[data-c='5'],
+[data-skin='nebula'] .drag-piece i[data-c='5'] {
+  --from: #59dbab;
+  --to: #34D399;
+  --glow: 0 0 14px rgba(52, 211, 153, .45);
+}
+[data-skin='nebula'] .cell[data-c='6'],
+[data-skin='nebula'] .piece i[data-c='6'],
+[data-skin='nebula'] .drag-piece i[data-c='6'] {
+  --from: #fccb4b;
+  --to: #FBBF24;
+  --glow: 0 0 14px rgba(251, 191, 36, .45);
+}
+[data-skin='nebula'] .cell[data-c='7'],
+[data-skin='nebula'] .piece i[data-c='7'],
+[data-skin='nebula'] .drag-piece i[data-c='7'] {
+  --from: #fc8b9b;
+  --to: #FB7185;
+  --glow: 0 0 14px rgba(251, 113, 133, .45);
+}
+[data-skin='nebula'] .cell[data-c='8'],
+[data-skin='nebula'] .piece i[data-c='8'],
+[data-skin='nebula'] .drag-piece i[data-c='8'] {
+  --from: #98a1f9;
+  --to: #818CF8;
+  --glow: 0 0 14px rgba(129, 140, 248, .45);
+}
+[data-skin='mochi'] {
+  color-scheme: light;
+  --bg: #FFF8F4;
+  --text: #5E4A52;
+  --textMuted: #A38F97;
+  --surface: #FFFFFFE6;
+  --surfaceStrong: #FFFFFF;
+  --border: #EBD9D2;
+  --board: #FFFFFF;
+  --boardBorder: #F3E2DB;
+  --cell: #F7ECE7;
+  --accent: #FF7AA2;
+  --accentInk: #FFFFFF;
+  --accentAlt: #7ED0EC;
+  --danger: #FF7A7A;
+  --success: #5CC98D;
+  --overlay: #FFF3EDF2;
+  --accent-rgb: 255, 122, 162;
+  --board-radius: 34px;
+  --cell-radius-ratio: 0.3;
+  --gap-ratio: 0.075;
+  --bounce: 0.34;
+  --font: 'Baloo 2', 'Segoe UI Rounded', 'Nunito', system-ui, sans-serif;
+  --backdrop:
+    radial-gradient(circle at 12% 12%, rgba(255, 211, 226, 0.85) 0%, rgba(255, 211, 226, 0) 62%),
+    radial-gradient(circle at 88% 20%, rgba(207, 235, 255, 0.75) 0%, rgba(207, 235, 255, 0) 55.00000000000001%),
+    radial-gradient(circle at 80% 86%, rgba(255, 240, 190, 0.7) 0%, rgba(255, 240, 190, 0) 57.99999999999999%),
+    radial-gradient(circle at 10% 86%, rgba(216, 246, 223, 0.7) 0%, rgba(216, 246, 223, 0) 55.00000000000001%);
+}
+[data-skin='mochi'] .cell[data-c='1'],
+[data-skin='mochi'] .piece i[data-c='1'],
+[data-skin='mochi'] .drag-piece i[data-c='1'] {
+  --from: #ffafc5;
+  --to: #FF9EB8;
+  --glow: none;
+}
+[data-skin='mochi'] .cell[data-c='2'],
+[data-skin='mochi'] .piece i[data-c='2'],
+[data-skin='mochi'] .drag-piece i[data-c='2'] {
+  --from: #ffdc9f;
+  --to: #FFD48A;
+  --glow: none;
+}
+[data-skin='mochi'] .cell[data-c='3'],
+[data-skin='mochi'] .piece i[data-c='3'],
+[data-skin='mochi'] .drag-piece i[data-c='3'] {
+  --from: #b8ebd8;
+  --to: #A8E6CF;
+  --glow: none;
+}
+[data-skin='mochi'] .cell[data-c='4'],
+[data-skin='mochi'] .piece i[data-c='4'],
+[data-skin='mochi'] .drag-piece i[data-c='4'] {
+  --from: #c2dfff;
+  --to: #B5D8FF;
+  --glow: none;
+}
+[data-skin='mochi'] .cell[data-c='5'],
+[data-skin='mochi'] .piece i[data-c='5'],
+[data-skin='mochi'] .drag-piece i[data-c='5'] {
+  --from: #dfc2fe;
+  --to: #D8B4FE;
+  --glow: none;
+}
+[data-skin='mochi'] .cell[data-c='6'],
+[data-skin='mochi'] .piece i[data-c='6'],
+[data-skin='mochi'] .drag-piece i[data-c='6'] {
+  --from: #ffc1b7;
+  --to: #FFB3A7;
+  --glow: none;
+}
+[data-skin='mochi'] .cell[data-c='7'],
+[data-skin='mochi'] .piece i[data-c='7'],
+[data-skin='mochi'] .drag-piece i[data-c='7'] {
+  --from: #b0e6df;
+  --to: #9FE0D8;
+  --glow: none;
+}
+[data-skin='mochi'] .cell[data-c='8'],
+[data-skin='mochi'] .piece i[data-c='8'],
+[data-skin='mochi'] .drag-piece i[data-c='8'] {
+  --from: #ffd3e6;
+  --to: #FFC9E0;
+  --glow: none;
+}
+[data-skin='prism'] {
+  color-scheme: light;
+  --bg: #EEF1FF;
+  --text: #252A47;
+  --textMuted: #6E7499;
+  --surface: #FFFFFF66;
+  --surfaceStrong: #FFFFFFB3;
+  --border: #FFFFFFB3;
+  --board: #FFFFFF59;
+  --boardBorder: #FFFFFFA6;
+  --cell: #FFFFFF4D;
+  --accent: #5B6BFF;
+  --accentInk: #FFFFFF;
+  --accentAlt: #F472B6;
+  --danger: #F43F5E;
+  --success: #10B981;
+  --overlay: #EEF1FFE6;
+  --accent-rgb: 91, 107, 255;
+  --board-radius: 24px;
+  --cell-radius-ratio: 0.16;
+  --gap-ratio: 0.07;
+  --bounce: 0;
+  --font: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
+  --backdrop:
+    radial-gradient(circle at 16% 14.000000000000002%, rgba(255, 201, 224, 0.9) 0%, rgba(255, 201, 224, 0) 60%),
+    radial-gradient(circle at 86% 16%, rgba(159, 212, 255, 0.85) 0%, rgba(159, 212, 255, 0) 57.99999999999999%),
+    radial-gradient(circle at 78% 84%, rgba(196, 181, 253, 0.8) 0%, rgba(196, 181, 253, 0) 62%),
+    radial-gradient(circle at 12% 88%, rgba(167, 243, 208, 0.8) 0%, rgba(167, 243, 208, 0) 57.99999999999999%);
+}
+[data-skin='prism'] .cell[data-c='1'],
+[data-skin='prism'] .piece i[data-c='1'],
+[data-skin='prism'] .drag-piece i[data-c='1'] {
+  --from: #7986ff;
+  --to: #5B6BFF;
+  --glow: none;
+}
+[data-skin='prism'] .cell[data-c='2'],
+[data-skin='prism'] .piece i[data-c='2'],
+[data-skin='prism'] .drag-piece i[data-c='2'] {
+  --from: #2ecdb8;
+  --to: #00C2A8;
+  --glow: none;
+}
+[data-skin='prism'] .cell[data-c='3'],
+[data-skin='prism'] .piece i[data-c='3'],
+[data-skin='prism'] .drag-piece i[data-c='3'] {
+  --from: #ff9f79;
+  --to: #FF8A5B;
+  --glow: none;
+}
+[data-skin='prism'] .cell[data-c='4'],
+[data-skin='prism'] .piece i[data-c='4'],
+[data-skin='prism'] .drag-piece i[data-c='4'] {
+  --from: #9486ff;
+  --to: #7C6BFF;
+  --glow: none;
+}
+[data-skin='prism'] .cell[data-c='5'],
+[data-skin='prism'] .piece i[data-c='5'],
+[data-skin='prism'] .drag-piece i[data-c='5'] {
+  --from: #53c5f7;
+  --to: #2DB8F5;
+  --glow: none;
+}
+[data-skin='prism'] .cell[data-c='6'],
+[data-skin='prism'] .piece i[data-c='6'],
+[data-skin='prism'] .drag-piece i[data-c='6'] {
+  --from: #f47394;
+  --to: #F2547D;
+  --glow: none;
+}
+[data-skin='prism'] .cell[data-c='7'],
+[data-skin='prism'] .piece i[data-c='7'],
+[data-skin='prism'] .drag-piece i[data-c='7'] {
+  --from: #75d192;
+  --to: #57C77A;
+  --glow: none;
+}
+[data-skin='prism'] .cell[data-c='8'],
+[data-skin='prism'] .piece i[data-c='8'],
+[data-skin='prism'] .drag-piece i[data-c='8'] {
+  --from: #f3b85e;
+  --to: #F0A93B;
+  --glow: none;
+}

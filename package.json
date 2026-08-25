@@ -1,0 +1,12 @@
+{
+  "name": "blockfall",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Block Fall — a grid puzzle. Free, no ads, no tracking, plays offline.",
+  "scripts": {
+    "test": "node --test web/tests/*.test.js",
+    "serve": "node web/scripts/serve.mjs"
+  },
+  "license": "MIT"
+}

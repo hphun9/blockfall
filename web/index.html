@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="vi" data-skin="nebula">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Block Fall</title>
+<meta name="description" content="Xếp khối, phá hàng. Miễn phí, không quảng cáo, chơi được khi không có mạng." />
+<meta name="theme-color" content="#070B18" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="styles/skins.css" />
+<link rel="stylesheet" href="styles/base.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span data-i18n="app.title">Block Fall</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="btn-undo" title="Hoàn tác" aria-label="Hoàn tác">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7v6h6" /><path d="M3 13a9 9 0 1 0 3-7.7L3 8" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="btn-new" title="Ván mới" aria-label="Ván mới">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="btn-settings" title="Cài đặt" aria-label="Cài đặt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 5 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9.6a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="hud" aria-live="polite">
+      <div class="stat">
+        <div class="stat-label" data-i18n="hud.score">Điểm</div>
+        <div class="stat-value" id="score">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label" data-i18n="hud.best">Kỷ lục</div>
+        <div class="stat-value" id="best">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label" data-i18n="hud.lines">Hàng</div>
+        <div class="stat-value" id="lines">0</div>
+      </div>
+    </section>
+
+    <div class="board-wrap">
+      <div class="board" id="board" role="grid" aria-label="Bàn cờ"></div>
+    </div>
+
+    <div class="tray-wrap">
+      <section class="tray" id="tray" aria-label="Khay khối">
+        <div class="slot" data-slot="0"></div>
+        <div class="slot" data-slot="1"></div>
+        <div class="slot" data-slot="2"></div>
+      </section>
+    </div>
+
+    <footer class="foot">
+      <div class="mode-switch" role="group" aria-label="Chế độ">
+        <button id="mode-classic" aria-pressed="true" data-i18n="mode.classic">Tự do</button>
+        <button id="mode-daily" aria-pressed="false" data-i18n="mode.daily">Hằng ngày</button>
+      </div>
+      <button class="chip" id="btn-howto" data-i18n="btn.howTo">Cách chơi</button>
+    </footer>
+  </main>
+
+  <div class="drag-layer" id="drag-layer"></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

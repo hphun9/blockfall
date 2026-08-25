@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # No install step: the game has no dependencies, and keeping it that way
+      # is a design constraint rather than an accident.
+      - name: Rules
+        run: npm test
+
+      # A stale generated file means the committed CSS or strings no longer
+      # match their source, which is the one way the two can silently diverge.
+      - name: Generated files are current
+        run: |
+          node scripts/generate-skins.mjs --check
+          node scripts/generate-strings.mjs --check

@@ -1,0 +1,460 @@
+/**
+ * Wiring: engine, storage, and the DOM.
+ *
+ * The engine never touches the page and the page never implements a rule —
+ * everything here is translation between the two. That split is what let the
+ * rules be covered by 27 headless tests.
+ */
+
+import { Game, SIZE } from './core/engine.js';
+import { dailySeed, randomSeed, utcDateKey } from './core/rng.js';
+import { Storage } from './core/storage.js';
+import { I18n, detectLocale, SUPPORTED } from './i18n.js';
+import { BoardView, renderTray } from './ui/board.js';
+import { DragController } from './ui/drag.js';
+import { Sound } from './ui/sound.js';
+
+const $ = (sel) => document.querySelector(sel);
+
+const SKINS = ['nebula', 'mochi', 'prism'];
+const SKIN_NAMES = {
+  nebula: { vi: 'Nebula', en: 'Nebula' },
+  mochi: { vi: 'Mochi', en: 'Mochi' },
+  prism: { vi: 'Prism', en: 'Prism' },
+};
+
+class App {
+  constructor() {
+    this.store = new Storage();
+    this.settings = this.store.loadSettings();
+    this.i18n = new I18n(this.settings.locale ?? detectLocale());
+
+    this.el = {
+      board: $('#board'),
+      tray: $('#tray'),
+      slots: [...document.querySelectorAll('.slot')],
+      score: $('#score'),
+      best: $('#best'),
+      lines: $('#lines'),
+      undo: $('#btn-undo'),
+      newGame: $('#btn-new'),
+      settings: $('#btn-settings'),
+      howto: $('#btn-howto'),
+      modeClassic: $('#mode-classic'),
+      modeDaily: $('#mode-daily'),
+      dragLayer: $('#drag-layer'),
+      toasts: $('#toasts'),
+      boardWrap: document.querySelector('.board-wrap'),
+    };
+
+    this.view = new BoardView(this.el.board);
+    this.sound = new Sound(this.settings.sound !== false);
+    this.mode = this.settings.mode === 'daily' ? 'daily' : 'classic';
+    this.dateKey = utcDateKey();
+    this.busy = false;
+
+    this.applySkin(this.settings.skin);
+    this.applyLocale(this.i18n.locale);
+
+    this.view.mount(SIZE);
+    this.store.pruneDailies(this.dateKey);
+    this.game = this.restoreOrCreate();
+
+    this.drag = new DragController({
+      layer: this.el.dragLayer,
+      board: this.el.board,
+      getSize: () => this.game.size,
+      getPiece: (slot) => this.game.tray[slot],
+      onDrop: (slot, row, col) => this.handleDrop(slot, row, col),
+      onHover: (slot, row, col) => this.handleHover(slot, row, col),
+      onCancel: () => this.view.clearPreview(),
+    });
+    this.el.slots.forEach((slotEl, i) => this.drag.attach(slotEl, i));
+
+    this.bind();
+    this.render();
+
+    // The tray previews are measured from their slot, and on first paint the
+    // slots have not been laid out yet — so measure again once they have.
+    requestAnimationFrame(() => {
+      this.view.refresh();
+      this.view.draw(this.game.cells);
+      renderTray(this.el.slots, this.game.tray, (p) => this.game.fitsAnywhere(p));
+    });
+
+    // A resize changes the cell geometry the drag maths depends on, and the
+    // tray previews are sized from their slot, so both must be redrawn.
+    globalThis.addEventListener('resize', () => {
+      this.view.refresh();
+      renderTray(this.el.slots, this.game.tray, (p) => this.game.fitsAnywhere(p));
+    });
+    // A new UTC day while the tab sits open must not leave a stale daily board.
+    globalThis.addEventListener('focus', () => this.checkDateRollover());
+  }
+
+  // ------------------------------------------------------------ lifecycle
+
+  restoreOrCreate() {
+    const saved = this.store.loadGame(this.mode, this.dateKey);
+    if (saved) {
+      const game = Game.fromJSON(saved);
+      if (game && !game.over) return game;
+      if (game && game.over && this.mode === 'daily') return game;
+    }
+    return this.freshGame();
+  }
+
+  freshGame() {
+    const seed = this.mode === 'daily' ? dailySeed(this.dateKey) : randomSeed();
+    return new Game({ seed, mode: this.mode });
+  }
+
+  newGame() {
+    if (this.mode === 'daily' && this.game?.over) {
+      this.toast(this.i18n.t('toast.dailyDone'));
+      return;
+    }
+    this.store.clearGame(this.mode, this.dateKey);
+    this.game = this.freshGame();
+    this.view.clearPreview();
+    this.render();
+    this.toast(this.i18n.t('toast.newGame'));
+  }
+
+  checkDateRollover() {
+    const today = utcDateKey();
+    if (today === this.dateKey) return;
+    this.dateKey = today;
+    this.store.pruneDailies(today);
+    if (this.mode === 'daily') {
+      this.game = this.restoreOrCreate();
+      this.render();
+    }
+  }
+
+  save() {
+    this.store.saveGame(this.mode, this.dateKey, this.game.toJSON());
+  }
+
+  // --------------------------------------------------------------- input
+
+  bind() {
+    this.el.newGame.addEventListener('click', () => this.newGame());
+    this.el.undo.addEventListener('click', () => this.undo());
+    this.el.settings.addEventListener('click', () => this.openSettings());
+    this.el.howto.addEventListener('click', () => this.openHowTo());
+    this.el.modeClassic.addEventListener('click', () => this.setMode('classic'));
+    this.el.modeDaily.addEventListener('click', () => this.setMode('daily'));
+
+    globalThis.addEventListener('keydown', (e) => {
+      if (e.key === 'z' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); this.undo(); }
+      if (e.key === 'n' && !e.ctrlKey && !e.metaKey) this.newGame();
+    });
+  }
+
+  setMode(mode) {
+    if (this.mode === mode) return;
+    this.save();
+    this.mode = mode;
+    this.settings.mode = mode;
+    this.store.saveSettings(this.settings);
+    this.game = this.restoreOrCreate();
+    this.view.clearPreview();
+    this.render();
+  }
+
+  handleHover(slot, row, col) {
+    if (this.busy || this.game.over) return;
+    const piece = this.game.tray[slot];
+    if (!piece) return;
+    const valid = this.game.fits(piece, row, col);
+    const clears = valid ? this.game.previewClears(piece, row, col) : null;
+    this.view.preview(piece, row, col, valid, clears);
+  }
+
+  async handleDrop(slot, row, col) {
+    this.view.clearPreview();
+    if (this.busy || this.game.over) return;
+
+    // Snapshot the colours before placing: the engine empties cleared cells
+    // immediately, and the clear animation needs something to fade out.
+    const piece = this.game.tray[slot];
+    const beforeCells = this.game.cells.slice();
+
+    const result = this.game.place(slot, row, col);
+    if (!result) return;
+
+    this.busy = true;
+
+    if (result.cleared.length > 0) {
+      // Paint the board as it looked with the piece down but before the clear.
+      const withPiece = beforeCells.slice();
+      for (const i of result.placed) withPiece[i] = piece.colour + 1;
+      this.view.draw(withPiece, result.placed);
+      this.sound.clear(result.rows.length + result.cols.length, result.combo);
+      this.bumpScore();
+      this.updateHud();
+      this.popScore(result);
+      await this.view.animateClear(result.cleared);
+    } else {
+      this.view.draw(this.game.cells, result.placed);
+      this.sound.drop();
+      this.bumpScore();
+    }
+
+    this.view.draw(this.game.cells);
+    renderTray(this.el.slots, this.game.tray, (p) => this.game.fitsAnywhere(p));
+    this.updateHud();
+    this.save();
+    this.busy = false;
+
+    if (this.game.over) this.finish();
+  }
+
+  undo() {
+    if (this.busy) return;
+    if (!this.game.canUndo()) {
+      this.toast(this.i18n.t('toast.noUndo'));
+      return;
+    }
+    this.game.undo();
+    this.view.clearPreview();
+    this.render();
+    this.save();
+    this.toast(this.i18n.t('toast.undo'));
+  }
+
+  // -------------------------------------------------------------- render
+
+  render() {
+    this.view.mount(this.game.size);
+    this.view.draw(this.game.cells);
+    renderTray(this.el.slots, this.game.tray, (p) => this.game.fitsAnywhere(p));
+    this.updateHud();
+    this.el.modeClassic.setAttribute('aria-pressed', String(this.mode === 'classic'));
+    this.el.modeDaily.setAttribute('aria-pressed', String(this.mode === 'daily'));
+    if (this.game.over) this.finish();
+  }
+
+  updateHud() {
+    const stats = this.store.loadStats();
+    this.el.score.textContent = String(this.game.score);
+    this.el.best.textContent = String(Math.max(stats.best, this.game.score));
+    this.el.lines.textContent = String(this.game.lines);
+    this.el.undo.disabled = !this.game.canUndo();
+  }
+
+  bumpScore() {
+    const el = this.el.score;
+    el.classList.remove('bump');
+    void el.offsetWidth;
+    el.classList.add('bump');
+  }
+
+  popScore(result) {
+    const first = result.cleared[0];
+    const at = this.view.cellCentre(first);
+    if (!at) return;
+    const pop = document.createElement('div');
+    pop.className = 'pop';
+    const lineCount = result.rows.length + result.cols.length;
+    const label = lineCount >= 4 ? 'clear.quad'
+      : lineCount === 3 ? 'clear.triple'
+      : lineCount === 2 ? 'clear.double'
+      : 'clear.single';
+    pop.textContent = `+${result.gained}  ${this.i18n.t(label)}`;
+    pop.style.left = `${at.x}px`;
+    pop.style.top = `${at.y}px`;
+    this.el.boardWrap.appendChild(pop);
+    setTimeout(() => pop.remove(), 850);
+  }
+
+  toast(text) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = text;
+    this.el.toasts.appendChild(el);
+    setTimeout(() => el.remove(), 1900);
+  }
+
+  // --------------------------------------------------------------- sheets
+
+  finish() {
+    this.drag.cancel();
+    this.sound.over();
+    const { isBest } = this.store.recordRun({
+      score: this.game.score,
+      lines: this.game.lines,
+      drops: this.game.drops,
+      bestCombo: this.game.bestCombo,
+      mode: this.mode,
+      dateKey: this.dateKey,
+    });
+    this.save();
+    this.updateHud();
+    this.openSheet(this.buildOverSheet(isBest));
+  }
+
+  buildOverSheet(isBest) {
+    const t = (k, v) => this.i18n.t(k, v);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <h2>${t('over.title')}${isBest ? `<span class="badge-new">${t('over.newBest')}</span>` : ''}</h2>
+      <div class="final">
+        <div><div class="k">${t('hud.score')}</div><div class="v">${this.game.score}</div></div>
+        <div><div class="k">${t('hud.lines')}</div><div class="v">${this.game.lines}</div></div>
+        <div><div class="k">${t('hud.combo')}</div><div class="v">${this.game.bestCombo}</div></div>
+      </div>
+      <button class="btn" data-act="again">${t('btn.playAgain')}</button>
+      <button class="btn ghost" data-act="close">${t('btn.close')}</button>
+    `;
+    wrap.querySelector('[data-act="again"]').addEventListener('click', () => {
+      this.closeSheet();
+      this.newGame();
+    });
+    wrap.querySelector('[data-act="close"]').addEventListener('click', () => this.closeSheet());
+    return wrap;
+  }
+
+  openSettings() {
+    const t = (k) => this.i18n.t(k);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <h2>${t('settings.title')}</h2>
+      <div class="sheet-row">
+        <span>${t('settings.skin')}</span>
+        <div class="chips" data-group="skin"></div>
+      </div>
+      <div class="sheet-row">
+        <span>${t('settings.language')}</span>
+        <div class="chips" data-group="locale"></div>
+      </div>
+      <div class="sheet-row">
+        <span>${t('settings.sound')}</span>
+        <div class="chips" data-group="sound"></div>
+      </div>
+      <p style="margin-top:14px">${t('settings.privacy')}</p>
+      <button class="btn" data-act="close">${t('btn.close')}</button>
+    `;
+
+    const skinBox = wrap.querySelector('[data-group="skin"]');
+    for (const id of SKINS) {
+      const b = document.createElement('button');
+      b.className = 'chip';
+      b.textContent = SKIN_NAMES[id][this.i18n.locale] ?? id;
+      b.setAttribute('aria-pressed', String(this.settings.skin === id));
+      b.addEventListener('click', () => {
+        this.applySkin(id);
+        this.settings.skin = id;
+        this.store.saveSettings(this.settings);
+        for (const other of skinBox.children) other.setAttribute('aria-pressed', 'false');
+        b.setAttribute('aria-pressed', 'true');
+        this.view.refresh();
+        this.view.draw(this.game.cells);
+      });
+      skinBox.appendChild(b);
+    }
+
+    const localeBox = wrap.querySelector('[data-group="locale"]');
+    for (const code of SUPPORTED) {
+      const b = document.createElement('button');
+      b.className = 'chip';
+      b.textContent = code === 'vi' ? 'Tiếng Việt' : 'English';
+      b.setAttribute('aria-pressed', String(this.i18n.locale === code));
+      b.addEventListener('click', () => {
+        this.applyLocale(code);
+        this.settings.locale = code;
+        this.store.saveSettings(this.settings);
+        this.closeSheet();
+        this.openSettings();
+      });
+      localeBox.appendChild(b);
+    }
+
+    const soundBox = wrap.querySelector('[data-group="sound"]');
+    for (const on of [true, false]) {
+      const b = document.createElement('button');
+      b.className = 'chip';
+      b.textContent = on
+        ? (this.i18n.locale === 'vi' ? 'Bật' : 'On')
+        : (this.i18n.locale === 'vi' ? 'Tắt' : 'Off');
+      b.setAttribute('aria-pressed', String((this.settings.sound !== false) === on));
+      b.addEventListener('click', () => {
+        this.settings.sound = on;
+        this.sound.setEnabled(on);
+        this.store.saveSettings(this.settings);
+        for (const other of soundBox.children) other.setAttribute('aria-pressed', 'false');
+        b.setAttribute('aria-pressed', 'true');
+        if (on) this.sound.drop(); // let the player hear what they just enabled
+      });
+      soundBox.appendChild(b);
+    }
+
+    wrap.querySelector('[data-act="close"]').addEventListener('click', () => this.closeSheet());
+    this.openSheet(wrap);
+  }
+
+  openHowTo() {
+    const t = (k) => this.i18n.t(k);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <h2>${t('howto.title')}</h2>
+      <ol class="howto-list">
+        <li>${t('howto.1')}</li>
+        <li>${t('howto.2')}</li>
+        <li>${t('howto.3')}</li>
+        <li>${t('howto.4')}</li>
+        <li>${t('howto.5')}</li>
+      </ol>
+      <button class="btn" data-act="close">${t('btn.close')}</button>
+    `;
+    wrap.querySelector('[data-act="close"]').addEventListener('click', () => this.closeSheet());
+    this.openSheet(wrap);
+  }
+
+  openSheet(content) {
+    this.closeSheet();
+    const scrim = document.createElement('div');
+    scrim.className = 'scrim';
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    sheet.appendChild(content);
+    scrim.appendChild(sheet);
+    scrim.addEventListener('click', (e) => { if (e.target === scrim) this.closeSheet(); });
+    document.body.appendChild(scrim);
+    this._scrim = scrim;
+  }
+
+  closeSheet() {
+    this._scrim?.remove();
+    this._scrim = null;
+  }
+
+  // -------------------------------------------------------------- theming
+
+  applySkin(id) {
+    const skin = SKINS.includes(id) ? id : SKINS[0];
+    document.documentElement.dataset.skin = skin;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+    if (meta && bg) meta.setAttribute('content', bg);
+  }
+
+  applyLocale(code) {
+    this.i18n.setLocale(code);
+    document.documentElement.lang = this.i18n.locale;
+    for (const el of document.querySelectorAll('[data-i18n]')) {
+      el.textContent = this.i18n.t(el.dataset.i18n);
+    }
+  }
+}
+
+globalThis.app = new App();
+
+// Offline support. Registered after the game is up so a failure here can never
+// stop someone playing — the service worker is a bonus, not a dependency.
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  globalThis.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
