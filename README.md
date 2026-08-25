@@ -6,11 +6,21 @@
 
 **Xếp khối, phá hàng.** Trò xếp hình trên lưới 8×8 — miễn phí, không quảng cáo, không theo dõi, chơi được khi không có mạng.
 
+[![CI](https://github.com/hphun9/blockfall/actions/workflows/ci.yml/badge.svg)](https://github.com/hphun9/blockfall/actions/workflows/ci.yml)
+[![Deploy web](https://github.com/hphun9/blockfall/actions/workflows/pages.yml/badge.svg)](https://github.com/hphun9/blockfall/actions/workflows/pages.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 </div>
 
 ---
 
 ## Chơi
+
+### ▶ [hphun9.github.io/blockfall](https://hphun9.github.io/blockfall/)
+
+Mở ra là chơi. Không cài đặt, không đăng ký. Thêm vào màn hình chính thì tắt mạng vẫn chơi được.
+
+### Chạy tại máy
 
 ```bash
 npm run serve      # http://localhost:8080
