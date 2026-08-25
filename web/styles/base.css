@@ -216,6 +216,15 @@ body::before {
   transition: background .12s;
 }
 
+/* No cell transitions while a piece is in hand.
+   The preview repaints as the pointer crosses cells, and a .12s background
+   fade on every one of them means the cells just left are still halfway
+   through fading while the new ones fade in — which reads as a dark smear
+   trailing the piece. During a drag the preview must snap. */
+.board.dragging .cell {
+  transition: none;
+}
+
 /* A filled cell carries data-c; its gradient comes from skins.css. */
 .cell[data-c] {
   background: linear-gradient(150deg, var(--from), var(--to));
@@ -247,15 +256,15 @@ body::before {
   100% { transform: scale(.15) rotate(8deg); opacity: 0; filter: brightness(1.4); }
 }
 
-/* Preview while dragging: valid landing spot, and the lines it would clear. */
+/* Preview while dragging: valid landing spot, and the lines it would clear.
+   Static opacity rather than a pulse. A pulsing ghost combined with cells
+   repainting as the pointer moves made the preview read as a shimmering smear
+   instead of a crisp target — and the target is the one thing that must be
+   unambiguous while aiming. Brighter too (.62), so it reads as a preview of a
+   block rather than a dark patch on the board. */
 .cell.ghost {
   background: linear-gradient(150deg, var(--from), var(--to));
-  opacity: .5;
-  animation: ghostPulse 1.1s ease-in-out infinite;
-}
-@keyframes ghostPulse {
-  0%, 100% { opacity: .42; }
-  50%      { opacity: .62; }
+  opacity: .62;
 }
 
 /* An empty cell the piece would cover but cannot be dropped on — usually
@@ -405,10 +414,12 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
   top: 0;
   transform: translate3d(-50%, -50%, 0);
   will-change: transform;
-  /* Slightly see-through: the piece in hand must never fully hide the board it
-     is being aimed at, or the player loses sight of what is underneath at
-     exactly the moment they need it most. */
-  opacity: .92;
+  /* Fully opaque. At .92 the board showed through the piece and mixed with the
+     preview underneath it, which muddied both — the piece is meant to read as
+     an object held above the board, not as a translucent overlay. Visibility
+     of what is underneath is already handled by the preview and by never
+     covering an occupied cell's colour. */
+  opacity: 1;
 }
 /* Inner: the grid, and the only thing the lift animation scales. */
 .drag-piece-inner {
@@ -417,16 +428,16 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
   transform-origin: 50% 50%;
   will-change: transform;
 }
-/* Shadow on the CELLS, not on the whole piece.
-   A drop-shadow() over the group cast one large dark blur (40% black, 22px
-   spread, offset 10px) that visibly darkened every board cell the piece passed
-   over — reported as "a black thing covering the blocks underneath". Per-cell
-   box-shadows are tight enough to read as lift without staining the board. */
+/* Shadow on the CELLS, not on the whole piece, and shaped the way Orbix shapes
+   a tile: a negative spread so the blur pulls INWARD instead of bleeding onto
+   the board, plus a coloured glow that belongs to the piece rather than a grey
+   wash over whatever is underneath. The earlier drop-shadow() over the group
+   was a 40%-black 22px blur that darkened every cell the piece crossed. */
 .drag-piece i {
   display: block;
   border-radius: var(--cell-r, 8px);
   background: linear-gradient(150deg, var(--from), var(--to));
-  box-shadow: 0 3px 8px rgba(0, 0, 0, .28);
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .5), 0 0 18px -4px var(--from);
 }
 .drag-piece i.gap { background: transparent; box-shadow: none; }
 

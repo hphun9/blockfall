@@ -108,6 +108,9 @@ export class DragController {
       { duration: 150, easing: 'cubic-bezier(.2, 1.2, .4, 1)', fill: 'backwards' }
     );
     slotEl.classList.add('dragging');
+    // Tells the board to drop its per-cell transitions for the duration of the
+    // drag; see .board.dragging in base.css.
+    this.opts.board.classList.add('dragging');
 
     const floor = this._dragFloor();
     this.active = {
@@ -242,6 +245,7 @@ export class DragController {
     if (a.frame != null) cancelAnimationFrame(a.frame);
     a.ghost.remove();
     a.slotEl.classList.remove('dragging');
+    this.opts.board.classList.remove('dragging');
     globalThis.removeEventListener('pointermove', this._onMove);
     globalThis.removeEventListener('pointerup', this._onUp);
     globalThis.removeEventListener('pointercancel', this._onUp);
