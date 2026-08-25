@@ -215,6 +215,9 @@ class App {
       // Sparks in the colour of the piece that caused the clear, so the
       // celebration is visibly connected to the move the player just made.
       this.view.sparks(result.cleared, this._pieceColour(piece));
+      // A streak of clears is the most exciting thing in normal play, and it
+      // used to be visible only as a small multiplier in the score pop.
+      if (result.combo >= 2) this.showCombo(result.combo);
       await this.view.animateClear(result.cleared);
     } else {
       this.view.draw(this.game.cells, result.placed);
@@ -410,6 +413,20 @@ class App {
     if (!probe) return null;
     const value = getComputedStyle(probe).getPropertyValue('--to').trim();
     return value || null;
+  }
+
+  /**
+   * Announce a combo over the board.
+   *
+   * Only from x2 up: a "combo" on every single clear would make the word
+   * meaningless and the animation constant.
+   */
+  showCombo(combo) {
+    const el = document.createElement('div');
+    el.className = 'combo-banner';
+    el.textContent = this.i18n.t('combo.banner', { n: combo });
+    this.el.boardWrap.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
   }
 
   popScore(result) {

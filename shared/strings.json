@@ -32,6 +32,7 @@
     "settings.title":   { "vi": "Cài đặt", "en": "Settings" },
     "settings.skin":    { "vi": "Giao diện", "en": "Skin" },
     "settings.sound":   { "vi": "Âm thanh", "en": "Sound" },
+    "combo.banner":     { "vi": "COMBO x{n}!", "en": "COMBO x{n}!" },
     "tier.1":           { "vi": "Khởi động", "en": "Warm up" },
     "tier.2":           { "vi": "Vào nhịp", "en": "Steady" },
     "tier.3":           { "vi": "Sắc bén", "en": "Sharp" },

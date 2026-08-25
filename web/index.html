@@ -77,6 +77,10 @@
       <!-- Shown only when the run has ended. The summary sheet is dismissible,
            so without this there is no visible way back into a game once it is
            closed — the board just sits there, greyed out and unplayable. -->
+      <!-- Inside the board wrapper so it can be positioned against the board
+           rather than the window; a window-relative offset cannot know where
+           the tray is and ended up covering the pieces. -->
+      <div class="toasts" id="toasts" aria-live="polite"></div>
       <div class="replay-cta" id="replay-cta" hidden>
         <span class="replay-cta-text" data-i18n="over.title">Hết nước đi</span>
         <button class="btn" id="btn-replay" data-i18n="btn.playAgain">Chơi lại</button>
@@ -101,7 +105,6 @@
   </main>
 
   <div class="drag-layer" id="drag-layer"></div>
-  <div class="toasts" id="toasts" aria-live="polite"></div>
 
   <script type="module" src="src/main.js"></script>
 </body>

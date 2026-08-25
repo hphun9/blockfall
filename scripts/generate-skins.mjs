@@ -104,8 +104,10 @@ function skinBlock(skin) {
     // what made the pastel skin read as stickers lying on the board rather
     // than pieces sitting on it.
     lines.push(`  --edge-hi: ${lighten(hex, 0.42)};`);
-    lines.push(`  --edge-lo: ${darken(hex, 0.24)};`);
-    lines.push(`  --rim: rgba(${rgbTriplet(darken(hex, 0.38))}, .55);`);
+    lines.push(`  --edge-lo: ${darken(hex, 0.28)};`);
+    // The rim doubles as the block's outline, so it has to be dark and solid
+    // enough to separate two same-coloured blocks touching edge to edge.
+    lines.push(`  --rim: ${darken(hex, 0.42)};`);
     // `none` is not a legal entry inside a comma-separated box-shadow list —
     // it invalidates the WHOLE declaration, which silently dropped the inset
     // highlight and rim on every skin with glow turned off. A fully

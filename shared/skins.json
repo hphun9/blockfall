@@ -16,7 +16,7 @@
       "geometry": {
         "boardRadius": 28,
         "tileRadiusRatio": 0.22,
-        "gapRatio": 0.075,
+        "gapRatio": 0.12,
         "glow": true,
         "blur": 0,
         "bounce": 0.0
@@ -92,7 +92,7 @@
       "geometry": {
         "boardRadius": 34,
         "tileRadiusRatio": 0.3,
-        "gapRatio": 0.075,
+        "gapRatio": 0.12,
         "glow": false,
         "blur": 0,
         "bounce": 0.42
@@ -168,7 +168,7 @@
       "geometry": {
         "boardRadius": 24,
         "tileRadiusRatio": 0.16,
-        "gapRatio": 0.07,
+        "gapRatio": 0.12,
         "glow": false,
         "blur": 16,
         "bounce": 0.0
