@@ -170,24 +170,25 @@ body::before {
      after the HUD, goal bar, tray and footer have taken theirs. min-height: 0
      is required or a flex item refuses to shrink below its content size, which
      is exactly how the board came to overlap the tray on a 667px screen. */
-  /* Shrinks to the board rather than claiming the whole leftover row: the
-     board is square, so on a tall screen the row is taller than the board and
-     the surplus showed up as a gap between the goal bar and the board.
-     flex-basis 0 with grow 1 lets it take space when the board needs it and
-     give it back when it does not. */
+  /* Takes only as much height as the square board actually needs.
+     A square board inside a taller row leaves surplus, and that surplus has to
+     go somewhere: centred it split above and below, pinned to the top it piled
+     up as a hole between the board and the tray. `fit-content` on the height
+     removes the surplus altogether rather than relocating it. */
+  /* The board is square, so whatever height this row is given beyond the
+     board's own is surplus. Two earlier attempts to remove it failed:
+     `fit-content` deadlocks (the board sizes from this element, which would
+     size from the board — Chrome resolves it to a 12x33 board), and
+     `aspect-ratio` on a flex item loses to the flex height and stretches the
+     grid back into rectangles.
+     So the surplus is CENTRED and kept small instead: the tray below takes a
+     larger share of the column, which leaves little for the board to give
+     back. */
   flex: 1 1 0;
   min-height: 0;
   display: flex;
   justify-content: center;
-  /* NOT stretch: stretch forces the board to fill the row's full height, which
-     overrides aspect-ratio and produces rectangular cells.
-     flex-start rather than center: the board is square, so any surplus height
-     in the row has to go SOMEWHERE — centred it split into a gap above and
-     below, which read as the board floating away from the goal bar. Pinned to
-     the top, the surplus collects above the tray where it looks intentional. */
-  align-items: flex-start;
-  /* Container for the board's 100cqh max-width, so the board can cap its WIDTH
-     by the height available and stay square on a short screen. */
+  align-items: center;
   container-type: size;
 }
 
@@ -204,12 +205,11 @@ body::before {
 
 .board {
   position: relative;
-  /* SQUARE, and only ONE axis may carry an explicit length.
-     `height: 100%` here was an explicit value, so it won outright and
-     aspect-ratio was ignored — the grid then stretched into 38.6x45.1 cells
-     and every drop landed slightly off the aimed spot.
-     Width is the driven axis (max-width clamps a narrow screen); height comes
-     from the ratio; max-height keeps it inside the row on a short one. */
+  /* SQUARE, and only ONE axis may carry an explicit length: with both set,
+     aspect-ratio is ignored outright and the 1fr grid stretches into
+     rectangular cells — which put every drop slightly off the aimed spot.
+     Width is driven, height follows the ratio, and 100cqh caps the width by
+     the height actually available so it stays square on a short screen. */
   width: 100%;
   max-width: min(100%, 100cqh);
   aspect-ratio: 1;
@@ -453,7 +453,7 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
   /* Scales with the viewport instead of being pinned at 168px: on a 667px
      phone that fixed height was a quarter of the screen and starved the board.
      The floor keeps the 5-cell bar legible on the smallest devices. */
-  height: clamp(96px, 17vh, 150px);
+  height: clamp(100px, 19vh, 168px);
 }
 
 .slot {

@@ -98,50 +98,43 @@
         "bounce": 0.42
       },
       "colors": {
-        "bg": "#FFF8F4",
-        "text": "#5E4A52",
-        "textMuted": "#8C737C",
-        "surface": "#FFFFFFE6",
+        "bg": "#F4F6FB",
+        "text": "#3D4657",
+        "textMuted": "#7A8496",
+        "surface": "#FFFFFFF2",
         "surfaceStrong": "#FFFFFF",
-        "border": "#EBD9D2",
-        "board": "#FFFCFA",
-        "boardBorder": "#E9D5CD",
-        "cell": "#E6D3CC",
+        "border": "#E2E7F0",
+        "board": "#FFFFFF",
+        "boardBorder": "#D5DCE8",
+        "cell": "#DCE1EA",
         "accent": "#FF7AA2",
         "accentInk": "#FFFFFF",
         "accentAlt": "#7ED0EC",
         "danger": "#FF7A7A",
         "success": "#5CC98D",
-        "overlay": "#FFF3EDF2"
+        "overlay": "#F4F6FBF2"
       },
       "backdrop": [
         {
-          "color": "#FFD3E2",
-          "x": 0.12,
-          "y": 0.12,
-          "r": 0.62,
-          "alpha": 0.85
+          "color": "#FFE0EC",
+          "x": 0.15,
+          "y": 0.1,
+          "r": 0.7,
+          "alpha": 0.55
         },
         {
-          "color": "#CFEBFF",
-          "x": 0.88,
-          "y": 0.2,
-          "r": 0.55,
-          "alpha": 0.75
+          "color": "#DCEBFF",
+          "x": 0.85,
+          "y": 0.22,
+          "r": 0.65,
+          "alpha": 0.55
         },
         {
-          "color": "#FFF0BE",
-          "x": 0.8,
-          "y": 0.86,
-          "r": 0.58,
-          "alpha": 0.7
-        },
-        {
-          "color": "#D8F6DF",
-          "x": 0.1,
-          "y": 0.86,
-          "r": 0.55,
-          "alpha": 0.7
+          "color": "#E8E4FF",
+          "x": 0.5,
+          "y": 0.92,
+          "r": 0.75,
+          "alpha": 0.45
         }
       ],
       "blocks": [

@@ -114,21 +114,21 @@
 }
 [data-skin='mochi'] {
   color-scheme: light;
-  --bg: #FFF8F4;
-  --text: #5E4A52;
-  --textMuted: #8C737C;
-  --surface: #FFFFFFE6;
+  --bg: #F4F6FB;
+  --text: #3D4657;
+  --textMuted: #7A8496;
+  --surface: #FFFFFFF2;
   --surfaceStrong: #FFFFFF;
-  --border: #EBD9D2;
-  --board: #FFFCFA;
-  --boardBorder: #E9D5CD;
-  --cell: #E6D3CC;
+  --border: #E2E7F0;
+  --board: #FFFFFF;
+  --boardBorder: #D5DCE8;
+  --cell: #DCE1EA;
   --accent: #FF7AA2;
   --accentInk: #FFFFFF;
   --accentAlt: #7ED0EC;
   --danger: #FF7A7A;
   --success: #5CC98D;
-  --overlay: #FFF3EDF2;
+  --overlay: #F4F6FBF2;
   --accent-rgb: 255, 122, 162;
   --board-radius: 34px;
   --cell-radius-ratio: 0.3;
@@ -136,10 +136,9 @@
   --bounce: 0.42;
   --font: 'Baloo 2', 'Segoe UI Rounded', 'Nunito', system-ui, sans-serif;
   --backdrop:
-    radial-gradient(circle at 12% 12%, rgba(255, 211, 226, 0.85) 0%, rgba(255, 211, 226, 0) 62%),
-    radial-gradient(circle at 88% 20%, rgba(207, 235, 255, 0.75) 0%, rgba(207, 235, 255, 0) 55.00000000000001%),
-    radial-gradient(circle at 80% 86%, rgba(255, 240, 190, 0.7) 0%, rgba(255, 240, 190, 0) 57.99999999999999%),
-    radial-gradient(circle at 10% 86%, rgba(216, 246, 223, 0.7) 0%, rgba(216, 246, 223, 0) 55.00000000000001%);
+    radial-gradient(circle at 15% 10%, rgba(255, 224, 236, 0.55) 0%, rgba(255, 224, 236, 0) 70%),
+    radial-gradient(circle at 85% 22%, rgba(220, 235, 255, 0.55) 0%, rgba(220, 235, 255, 0) 65%),
+    radial-gradient(circle at 50% 92%, rgba(232, 228, 255, 0.45) 0%, rgba(232, 228, 255, 0) 75%);
 }
 [data-skin='mochi'] .cell[data-c='1'],
 [data-skin='mochi'] .piece i[data-c='1'],

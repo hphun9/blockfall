@@ -18,6 +18,7 @@
 
 import { Rng, randomSeed } from './rng.js';
 import { drawPiece, PIECE_BY_ID } from './pieces.js';
+import { dealTray } from './dealer.js';
 import { tierFor } from './goals.js';
 
 export const SIZE = 8;
@@ -306,6 +307,11 @@ export class Game {
    * onto a nearly-full board and lose without having made a mistake — the
    * single most common complaint about this genre.
    *
+   * Above a pressure threshold the dealer also biases toward trays that keep a
+   * line clear REACHABLE (see dealer.js). It never places a piece and never
+   * scores the player's actual move: arranging well is still entirely on them,
+   * the deal only guarantees that arranging well remains possible.
+   *
    * The redeal is bounded and the fallback is deliberate: when the board is
    * genuinely so full that nothing helps, we accept the deal and the run ends.
    * That loss belongs to the player, and it is reproducible from the seed.
@@ -313,7 +319,7 @@ export class Game {
   _dealTray() {
     const MAX_REDEALS = 12;
     for (let attempt = 0; attempt <= MAX_REDEALS; attempt++) {
-      const tray = [drawPiece(this.rng), drawPiece(this.rng), drawPiece(this.rng)];
+      const tray = dealTray(this);
       if (attempt === MAX_REDEALS || tray.some((p) => this.fitsAnywhere(p))) {
         this.tray = tray;
         return;
