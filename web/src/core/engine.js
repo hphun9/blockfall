@@ -34,6 +34,15 @@ const COMBO_STEP = 0.5;
 const COMBO_MAX = 4;
 /** Emptying the whole board is worth a real bonus — it is genuinely hard. */
 const PERFECT_BONUS = 200;
+/**
+ * Leaving this few cells behind counts as a near sweep.
+ *
+ * Five, because a tray refills three pieces at a time and the smallest are one
+ * or two cells: below five the next deal alone can undo it, which would make
+ * the reward feel arbitrary.
+ */
+const NEAR_SWEEP_CELLS = 5;
+const NEAR_SWEEP_BONUS = 60;
 
 export class Game {
   constructor(options = {}) {
@@ -58,6 +67,7 @@ export class Game {
     this.combo = 0;
     this.bestCombo = 0;
     this.perfectClears = 0;
+    this.nearSweeps = 0;
     /** Highest goal tier reached this run (0 = none yet). */
     this.tier = 0;
     this.over = false;
@@ -228,10 +238,30 @@ export class Game {
     // Sweeping the board completely is the rarest thing a player can do here,
     // and it happens without any announcement unless we look for it. Checked
     // after the clear has been applied, and paid for properly.
-    const perfect = lineCount > 0 && this.filled() === 0;
+    const remaining = this.filled();
+    const perfect = lineCount > 0 && remaining === 0;
     if (perfect) {
       this.perfectClears++;
       gained += PERFECT_BONUS;
+    }
+
+    // Nearly clean: the achievement that is actually reachable.
+    //
+    // A true sweep is close to impossible by construction, and measuring it
+    // showed why: the tray refills three pieces at a time, so a board with a
+    // few cells left gains at least three more before it can lose any, and
+    // shedding them needs a full line — eight cells. Across 200 deals onto
+    // boards with 2, 3, 5 and 8 cells remaining, ZERO could be emptied.
+    //
+    // Runs did get down to an average low of 2.2 cells, though. That near miss
+    // is a real accomplishment and went completely unremarked, so it is now
+    // the thing that gets celebrated.
+    const nearSweep = lineCount > 0
+      && remaining > 0
+      && remaining <= NEAR_SWEEP_CELLS;
+    if (nearSweep) {
+      this.nearSweeps++;
+      gained += NEAR_SWEEP_BONUS;
     }
 
     const tierBefore = tierFor(this.score);
@@ -257,6 +287,7 @@ export class Game {
       gained: Math.round(gained),
       combo: this.combo,
       perfect,
+      nearSweep,
       tierUp,
       over: this.over,
     };
@@ -271,6 +302,7 @@ export class Game {
     this.lines = snap.lines;
     this.combo = snap.combo;
     this.perfectClears = snap.perfectClears;
+    this.nearSweeps = snap.nearSweeps;
     this.tier = snap.tier;
     this.tray = snap.tray.map((id) => (id ? PIECE_BY_ID.get(id) : null));
     this.rng.state = snap.rngState;
@@ -291,6 +323,7 @@ export class Game {
       lines: this.lines,
       combo: this.combo,
       perfectClears: this.perfectClears,
+      nearSweeps: this.nearSweeps,
       tier: this.tier,
       tray: this.tray.map((p) => (p ? p.id : null)),
       rngState: this.rng.state,
@@ -343,6 +376,7 @@ export class Game {
       combo: this.combo,
       bestCombo: this.bestCombo,
       perfectClears: this.perfectClears,
+      nearSweeps: this.nearSweeps,
       tier: this.tier,
       over: this.over,
       undoLeft: this.undoLeft,
@@ -368,6 +402,7 @@ export class Game {
     game.combo = data.combo ?? 0;
     game.bestCombo = data.bestCombo ?? 0;
     game.perfectClears = data.perfectClears ?? 0;
+    game.nearSweeps = data.nearSweeps ?? 0;
     game.tier = data.tier ?? 0;
     game.over = !!data.over;
     game.undoLeft = data.undoLeft ?? game.undoBudget;

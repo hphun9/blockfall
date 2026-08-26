@@ -82,6 +82,9 @@ class App {
     // The tray previews are measured from their slot, and on first paint the
     // slots have not been laid out yet — so measure again once they have.
     requestAnimationFrame(() => {
+      // Chrome height must be published before anything is measured from the
+      // board, or the first paint sizes the tray against a stale board.
+      this.measureChrome();
       this.view.refresh();
       this.view.draw(this.game.cells);
       this.drawTray();
@@ -90,6 +93,9 @@ class App {
     // A resize changes the cell geometry the drag maths depends on, and the
     // tray previews are sized from their slot, so both must be redrawn.
     globalThis.addEventListener('resize', () => {
+      // Re-measure first: rotating the phone changes how much height the
+      // fixed furniture leaves for the board.
+      this.measureChrome();
       this.view.refresh();
       this.drawTray();
     });
@@ -214,6 +220,10 @@ class App {
       // A streak of clears is the most exciting thing in normal play, and it
       // used to be visible only as a small multiplier in the score pop.
       if (result.combo >= 2) this.showCombo(result.combo);
+      // The stamped word, and a toast for a near sweep — the achievement that
+      // is actually reachable (a true sweep is close to impossible here).
+      this.showPow(result);
+      if (result.nearSweep) this.toast(this.i18n.t('toast.near'));
       await this.view.animateClear(result.cleared);
     } else {
       this.view.draw(this.game.cells, result.placed);
@@ -332,6 +342,38 @@ class App {
     this.el.replayCta.hidden = !over;
   }
 
+  /**
+   * Publish how much vertical space everything OTHER than the board uses.
+   *
+   * The board is square and sized from its width, so it needs a height cap or
+   * a short screen squashes it. That cap cannot come from its parent (parent
+   * and board would size each other in a loop, which Chrome resolves to a
+   * 12x12 board), and it cannot be a fixed percentage either: the header,
+   * stats, goal bar, tray and footer are roughly constant in pixels, so they
+   * eat 45% of a 667px phone and only 33% of a 915px one.
+   */
+  measureChrome() {
+    const app = document.querySelector('.app');
+    const wrap = this.el.boardWrap;
+    if (!app || !wrap) return;
+    const style = getComputedStyle(app);
+    let used = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const gap = parseFloat(style.rowGap) || 0;
+    let items = 0;
+    for (const child of app.children) {
+      items++;
+      if (child === wrap) continue;
+      used += child.getBoundingClientRect().height;
+    }
+    used += gap * Math.max(0, items - 1);
+    // A few pixels of slack. Sub-pixel rounding in the flex column means an
+    // exact figure can leave the board one or two pixels taller than the space
+    // it has, and the flex row then squashes it out of square — which puts
+    // every drop slightly off the aimed cell.
+    used += 4;
+    document.documentElement.style.setProperty('--chrome-h', `${Math.round(used)}px`);
+  }
+
   render() {
     this.view.mount(this.game.size);
     this.setGameOverUi(this.game.over);
@@ -409,6 +451,41 @@ class App {
     if (!probe) return null;
     const value = getComputedStyle(probe).getPropertyValue('--to').trim();
     return value || null;
+  }
+
+  /**
+   * The stamped word that lands on a big clear.
+   *
+   * Reserved for moments that deserve it — two or more lines, a near sweep, a
+   * full sweep. Firing on every single clear would make it wallpaper, and the
+   * whole point is that it marks something out of the ordinary.
+   */
+  showPow(result) {
+    const lines = result.rows.length + result.cols.length;
+    let key = null;
+    if (result.perfect) key = 'pow.perfect';
+    else if (result.nearSweep) key = 'pow.near';
+    else if (lines >= 4) key = 'pow.4';
+    else if (lines === 3) key = 'pow.3';
+    else if (lines === 2) key = 'pow.2';
+    if (!key) return;
+
+    const wrap = this.el.boardWrap;
+    const ring = document.createElement('div');
+    ring.className = 'pow-ring';
+    wrap.appendChild(ring);
+    setTimeout(() => ring.remove(), 700);
+
+    const el = document.createElement('div');
+    el.className = 'pow';
+    el.textContent = this.i18n.t(key);
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 1100);
+
+    // The board takes the hit too, so the word feels like an impact rather
+    // than a label drawn on top of a calm grid.
+    this.el.board.classList.add('pow-hit');
+    setTimeout(() => this.el.board.classList.remove('pow-hit'), 420);
   }
 
   /**

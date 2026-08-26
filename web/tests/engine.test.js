@@ -82,19 +82,24 @@ test('a row and a column can clear on the same drop', () => {
 });
 
 test('clearing two lines pays more than twice one line', () => {
-  // Both boards keep a stray block so neither run collects the perfect-clear
-  // bonus — otherwise the single-line case sweeps the board and wins on a
-  // bonus that has nothing to do with the comparison.
+  // Both boards keep enough stray blocks that neither run collects the
+  // perfect-clear OR the near-sweep bonus — otherwise the single-line case
+  // finishes nearly clean and wins on a bonus that has nothing to do with the
+  // comparison being made here.
+  const strays = (game) => {
+    for (let i = 0; i < 8; i++) game.cells[(3 + (i % 3)) * SIZE + (2 + i % 5)] = 1;
+  };
+
   const one = new Game({ seed: 7 });
   fillRowExcept(one, 0, 0);
-  one.cells[5 * SIZE + 5] = 1;
+  strays(one);
   one.tray[0] = PIECE_BY_ID.get('dot');
   const gainedOne = one.place(0, 0, 0).gained;
 
   const two = new Game({ seed: 7 });
   fillRowExcept(two, 0, 0);
   for (let r = 1; r < SIZE; r++) two.cells[r * SIZE] = 1;
-  two.cells[5 * SIZE + 5] = 1;
+  strays(two);
   two.tray[0] = PIECE_BY_ID.get('dot');
   const gainedTwo = two.place(0, 0, 0).gained;
 
@@ -468,4 +473,54 @@ test('a long run stays consistent', () => {
     assert.ok(game.cells.every((v) => v >= 0 && v <= 8));
   }
   assert.ok(game.drops > 0, 'the run should have made progress');
+});
+
+test('finishing nearly clean is recognised and paid for', () => {
+  // A true sweep is close to impossible by construction — the tray refills
+  // three pieces at a time, so a board with a few cells left gains at least
+  // three more before it can shed any, and shedding needs a full line of
+  // eight. Measured across 200 deals onto boards with 2, 3, 5 and 8 cells
+  // remaining: zero could be emptied. The near miss is the real achievement,
+  // so it has to actually pay.
+  const game = new Game({ seed: 21 });
+  fillRowExcept(game, 0, 0);
+  // Three strays left over after the row goes.
+  game.cells[4 * SIZE + 4] = 1;
+  game.cells[6 * SIZE + 2] = 1;
+  game.cells[7 * SIZE + 7] = 1;
+  game.tray[0] = PIECE_BY_ID.get('dot');
+
+  const res = game.place(0, 0, 0);
+  assert.equal(res.rows.length, 1, 'the row should clear');
+  assert.equal(game.filled(), 3, 'three strays should remain');
+  assert.ok(res.nearSweep, 'three cells left should count as a near sweep');
+  assert.equal(game.nearSweeps, 1);
+});
+
+test('a messy board does not collect the near-sweep bonus', () => {
+  // Otherwise the reward means nothing: it has to mark a board the player
+  // actually cleaned up, not any clear at all.
+  const game = new Game({ seed: 22 });
+  fillRowExcept(game, 0, 0);
+  for (let i = 0; i < 20; i++) game.cells[(2 + (i % 5)) * SIZE + (1 + (i % 6))] = 1;
+  game.tray[0] = PIECE_BY_ID.get('dot');
+
+  const res = game.place(0, 0, 0);
+  assert.ok(!res.nearSweep, 'a board with many cells left is not a near sweep');
+  assert.equal(game.nearSweeps, 0);
+});
+
+test('near sweeps survive undo and reload', () => {
+  const game = new Game({ seed: 23 });
+  fillRowExcept(game, 0, 0);
+  game.cells[4 * SIZE + 4] = 1;
+  game.tray[0] = PIECE_BY_ID.get('dot');
+  game.place(0, 0, 0);
+  assert.equal(game.nearSweeps, 1);
+
+  const restored = Game.fromJSON(JSON.parse(JSON.stringify(game.toJSON())));
+  assert.equal(restored.nearSweeps, 1, 'reload must keep the count');
+
+  game.undo();
+  assert.equal(game.nearSweeps, 0, 'undo must take the near sweep back too');
 });

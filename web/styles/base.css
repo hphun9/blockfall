@@ -43,7 +43,7 @@ body::before {
   z-index: 1;
   width: 100%;
   max-width: 520px;
-  padding: max(8px, env(safe-area-inset-top)) 8px max(10px, env(safe-area-inset-bottom));
+  padding: max(6px, env(safe-area-inset-top)) 5px max(8px, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -177,35 +177,15 @@ body::before {
    is no dead space between them. */
 .board-wrap {
   position: relative;
-  /* The board is the flexible element: it shrinks to whatever height is left
-     after the HUD, goal bar, tray and footer have taken theirs. min-height: 0
-     is required or a flex item refuses to shrink below its content size, which
-     is exactly how the board came to overlap the tray on a 667px screen. */
-  /* Takes only as much height as the square board actually needs.
-     A square board inside a taller row leaves surplus, and that surplus has to
-     go somewhere: centred it split above and below, pinned to the top it piled
-     up as a hole between the board and the tray. `fit-content` on the height
-     removes the surplus altogether rather than relocating it. */
-  /* The board is square, so whatever height this row is given beyond the
-     board's own is surplus. Two earlier attempts to remove it failed:
-     `fit-content` deadlocks (the board sizes from this element, which would
-     size from the board — Chrome resolves it to a 12x33 board), and
-     `aspect-ratio` on a flex item loses to the flex height and stretches the
-     grid back into rectangles.
-     So the surplus is CENTRED and kept small instead: the tray below takes a
-     larger share of the column, which leaves little for the board to give
-     back. */
-  /* Must keep a definite height: it is the size container the board measures
-     100cqh against, so `flex: 0 1 auto` collapses it to zero and takes the
-     board down with it (12x33). Three separate attempts to make this element
-     hug the square board have now failed the same way — the surplus stays,
-     split evenly above and below, which reads as margin rather than a hole. */
-  flex: 1 1 0;
+  /* Purely a positioning layer for the toasts and the replay banner. It takes
+     its size FROM the board rather than giving the board a size — which is
+     what finally removed the dead space: every earlier version made this a
+     size container the board measured against, so the two sized each other in
+     a loop and the surplus had to be parked somewhere. */
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   justify-content: center;
-  align-items: center;
-  container-type: size;
 }
 
 /* The tray takes only what it needs; the board above gets the rest. Both were
@@ -221,13 +201,19 @@ body::before {
 
 .board {
   position: relative;
-  /* SQUARE, and only ONE axis may carry an explicit length: with both set,
-     aspect-ratio is ignored outright and the 1fr grid stretches into
-     rectangular cells — which put every drop slightly off the aimed spot.
-     Width is driven, height follows the ratio, and 100cqh caps the width by
-     the height actually available so it stays square on a short screen. */
-  width: 100%;
-  max-width: min(100%, 100cqh);
+  /* Square from the width, capped by the height the column has left.
+     `height: auto` matters: an explicit height would beat aspect-ratio and
+     stretch the cells into rectangles, which is what made every drop land off
+     the aimed square. */
+  /* Square from the width, with a viewport-based cap so a short screen shrinks
+     the board instead of squashing it. The cap must NOT come from the parent:
+     making the wrapper a size container puts the two in a sizing loop that
+     Chrome resolves to a 12x12 board. So it is expressed against the viewport
+     minus everything else in the column, measured once in JS — a fixed
+     percentage cannot work, because the fixed parts do not scale with the
+     screen (they cost 45% of a 667px phone but only 33% of a 915px one). */
+  width: min(100%, calc(100dvh - var(--chrome-h, 300px)));
+  height: auto;
   aspect-ratio: 1;
   margin: 0 auto;
   background: var(--board);
@@ -353,6 +339,68 @@ body::before {
   100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2); }
 }
 
+/* The big stamped word — POW, BOOM — that lands on a multi-line clear.
+   Block Blast's most-copied flourish, and the reason is sound: a number going
+   up is information, a word slamming onto the board is a reaction. Rotated
+   slightly and stroked so it reads as a stamp rather than as UI text. */
+.pow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 7;
+  pointer-events: none;
+  font-weight: 900;
+  font-size: clamp(38px, 13vw, 58px);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #fff;
+  -webkit-text-stroke: 3px rgba(0, 0, 0, .34);
+  paint-order: stroke fill;
+  text-shadow:
+    0 6px 0 rgba(0, 0, 0, .18),
+    0 10px 34px rgba(0, 0, 0, .5),
+    0 0 40px var(--accent);
+  animation: powIn 1.05s cubic-bezier(.16, 1.5, .3, 1) forwards;
+}
+@keyframes powIn {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.25) rotate(-16deg); }
+  16%  { opacity: 1; transform: translate(-50%, -50%) scale(1.3) rotate(6deg); }
+  30%  { transform: translate(-50%, -50%) scale(.94) rotate(-3deg); }
+  42%  { transform: translate(-50%, -50%) scale(1.06) rotate(1deg); }
+  55%  { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  80%  { opacity: 1; transform: translate(-50%, -52%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -78%) scale(1.12); }
+}
+
+/* A shockwave ring under the word, so the hit has a physical centre. */
+.pow-ring {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 6;
+  pointer-events: none;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 99px;
+  border: 4px solid var(--accent);
+  animation: powRing .62s cubic-bezier(.2, .8, .3, 1) forwards;
+}
+@keyframes powRing {
+  0%   { opacity: .85; transform: scale(.3); border-width: 6px; }
+  100% { opacity: 0; transform: scale(5.5); border-width: 1px; }
+}
+
+/* Board recoil: the whole grid takes the hit for a moment. */
+.board.pow-hit { animation: powShake .38s ease-out; }
+@keyframes powShake {
+  0%   { transform: translate(0, 0) scale(1); }
+  18%  { transform: translate(-3px, 2px) scale(1.012); }
+  38%  { transform: translate(3px, -2px) scale(1.008); }
+  58%  { transform: translate(-2px, -1px) scale(1.004); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
 /* Combo banner: fires when clears land on consecutive drops. Big, brief and
    right over the board, because a streak is the most exciting thing that
    happens during normal play. */
@@ -469,7 +517,7 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
   /* Scales with the viewport instead of being pinned at 168px: on a 667px
      phone that fixed height was a quarter of the screen and starved the board.
      The floor keeps the 5-cell bar legible on the smallest devices. */
-  height: clamp(100px, 19vh, 168px);
+  height: clamp(108px, 21vh, 184px);
 }
 
 .slot {
