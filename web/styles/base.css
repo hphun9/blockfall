@@ -170,11 +170,25 @@ body::before {
      after the HUD, goal bar, tray and footer have taken theirs. min-height: 0
      is required or a flex item refuses to shrink below its content size, which
      is exactly how the board came to overlap the tray on a 667px screen. */
-  flex: 1 1 auto;
+  /* Shrinks to the board rather than claiming the whole leftover row: the
+     board is square, so on a tall screen the row is taller than the board and
+     the surplus showed up as a gap between the goal bar and the board.
+     flex-basis 0 with grow 1 lets it take space when the board needs it and
+     give it back when it does not. */
+  flex: 1 1 0;
   min-height: 0;
   display: flex;
   justify-content: center;
-  align-items: stretch;
+  /* NOT stretch: stretch forces the board to fill the row's full height, which
+     overrides aspect-ratio and produces rectangular cells.
+     flex-start rather than center: the board is square, so any surplus height
+     in the row has to go SOMEWHERE — centred it split into a gap above and
+     below, which read as the board floating away from the goal bar. Pinned to
+     the top, the surplus collects above the tray where it looks intentional. */
+  align-items: flex-start;
+  /* Container for the board's 100cqh max-width, so the board can cap its WIDTH
+     by the height available and stay square on a short screen. */
+  container-type: size;
 }
 
 /* The tray takes only what it needs; the board above gets the rest. Both were
@@ -190,14 +204,15 @@ body::before {
 
 .board {
   position: relative;
-  /* Square, sized by whichever axis runs out first: width on a tall screen,
-     height on a short one. Getting the second case right is what stops the
-     board overflowing into the tray; capping at 100% width stops it growing
-     past the column when there is height to spare. */
-  height: 100%;
-  width: min(100%, calc(var(--board-h, 100%)));
+  /* SQUARE, and only ONE axis may carry an explicit length.
+     `height: 100%` here was an explicit value, so it won outright and
+     aspect-ratio was ignored — the grid then stretched into 38.6x45.1 cells
+     and every drop landed slightly off the aimed spot.
+     Width is the driven axis (max-width clamps a narrow screen); height comes
+     from the ratio; max-height keeps it inside the row on a short one. */
+  width: 100%;
+  max-width: min(100%, 100cqh);
   aspect-ratio: 1;
-  max-width: 100%;
   margin: 0 auto;
   background: var(--board);
   border: 1px solid var(--boardBorder);
@@ -238,11 +253,10 @@ body::before {
       var(--to) 78%,
       var(--edge-lo, var(--to)) 100%);
   box-shadow:
-    /* A dark outline hugging the block. This is what separates two blocks of
-       the same colour sitting side by side — without it they merge into one
-       shapeless patch and the board becomes hard to read at a glance. */
-    0 0 0 1.5px var(--rim, rgba(0, 0, 0, .2)),
-    inset 0 2px 0 rgba(255, 255, 255, .6),
+    /* Depth only — no hard outline. A 1.5px dark ring around every cell made
+       the board look like a wire mesh rather than a set of blocks; the bright
+       top edge and darker bottom edge already give each block its form. */
+    inset 0 2px 0 rgba(255, 255, 255, .55),
     inset 0 -2.5px 0 var(--rim, rgba(0, 0, 0, .2)),
     var(--glow);
   overflow: hidden;
@@ -495,8 +509,7 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
       var(--to) 78%,
       var(--edge-lo, var(--to)) 100%);
   box-shadow:
-    0 0 0 1px var(--rim, rgba(0, 0, 0, .2)),
-    inset 0 1.5px 0 rgba(255, 255, 255, .55),
+    inset 0 1.5px 0 rgba(255, 255, 255, .5),
     inset 0 -2px 0 var(--rim, rgba(0, 0, 0, .2));
 }
 /* A gap in a tray piece is empty space, not a block: no fill, and no rim
@@ -551,8 +564,7 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
       var(--to) 78%,
       var(--edge-lo, var(--to)) 100%);
   box-shadow:
-    0 0 0 1.5px var(--rim, rgba(0, 0, 0, .2)),
-    inset 0 2px 0 rgba(255, 255, 255, .6),
+    inset 0 2px 0 rgba(255, 255, 255, .55),
     inset 0 -2.5px 0 var(--rim, rgba(0, 0, 0, .2)),
     0 6px 16px -8px rgba(0, 0, 0, .5),
     0 0 18px -4px var(--from);

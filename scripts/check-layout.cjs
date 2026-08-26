@@ -72,11 +72,27 @@ const MIN_CELL = 26;
         if (over > 1) overlaps.push(`${n1}/${n2} overlap ${Math.round(over)}px`);
       }
       const cell = document.querySelector('.cell');
+      const cellBox = cell ? cell.getBoundingClientRect() : null;
       const board = box('#board');
       const tray = box('.tray');
       const foot = box('.foot');
+      // Measure a SMALL piece only. Long bars are deliberately scaled down to
+      // fit their slot, so measuring whichever piece happens to be dealt
+      // reports a false failure roughly a third of the time.
+      let trayI = null;
+      for (const piece of document.querySelectorAll('.piece')) {
+        const cells = piece.querySelectorAll('i:not(.gap)');
+        const cols = getComputedStyle(piece).gridTemplateColumns.split(' ').length;
+        const rows = getComputedStyle(piece).gridTemplateRows.split(' ').length;
+        if (cells.length && cols <= 3 && rows <= 3) { trayI = cells[0]; break; }
+      }
       return {
         cell: cell ? Math.round(cell.getBoundingClientRect().width) : 0,
+        cellW: cellBox ? Math.round(cellBox.width * 10) / 10 : 0,
+        cellH: cellBox ? Math.round(cellBox.height * 10) / 10 : 0,
+        boardW: board ? Math.round(board.width) : 0,
+        boardH: board ? Math.round(board.height) : 0,
+        trayCell: trayI ? Math.round(trayI.getBoundingClientRect().width * 10) / 10 : 0,
         board: board ? Math.round(board.width) : 0,
         tray: tray ? Math.round(tray.height) : 0,
         footBottom: foot ? Math.round(foot.bottom) : 0,
@@ -88,6 +104,23 @@ const MIN_CELL = 26;
     }, MUST_NOT_OVERLAP);
 
     const problems = [];
+    // Cells MUST be square. A stretched grid is invisible to an overlap check
+    // and to a width-only cell check, but it puts every drop slightly off the
+    // spot the player aimed at — the whole game becomes harder to control.
+    if (Math.abs(m.cellW - m.cellH) > 1.5) {
+      problems.push(`cells not square: ${m.cellW}x${m.cellH}`);
+    }
+    if (Math.abs(m.boardW - m.boardH) > 3) {
+      problems.push(`board not square: ${m.boardW}x${m.boardH}`);
+    }
+    // The tray draws at TRAY_SCALE of a board cell so the player can judge
+    // how much room a piece needs. If that ratio drifts the tray lies.
+    if (m.cellW > 0 && m.trayCell > 0) {
+      const ratio = m.trayCell / m.cellW;
+      if (ratio < 0.52 || ratio > 0.72) {
+        problems.push(`tray/board cell ratio ${(ratio * 100).toFixed(0)}% (want ~62%)`);
+      }
+    }
     if (m.scrolls) problems.push('page scrolls');
     if (m.overflows) problems.push('footer past the viewport');
     if (m.cell < MIN_CELL) problems.push(`cell ${m.cell}px < ${MIN_CELL}px`);
@@ -98,7 +131,7 @@ const MIN_CELL = 26;
     if (!ok) failures++;
     console.log(
       `${ok ? 'ok  ' : 'FAIL'}  ${name.padEnd(14)} ${width}x${height}  ` +
-      `cell ${String(m.cell).padStart(2)}px  board ${m.board}px  tray ${m.tray}px  ` +
+      `cell ${m.cellW}x${m.cellH}  board ${m.boardW}x${m.boardH}  tray ${m.tray}px  ` +
       `footer ${m.footBottom}/${m.viewport}`
     );
     if (!ok) problems.forEach((p) => console.log(`        - ${p}`));

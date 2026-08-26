@@ -23,7 +23,7 @@
   --accent-rgb: 34, 211, 238;
   --board-radius: 28px;
   --cell-radius-ratio: 0.22;
-  --gap-ratio: 0.12;
+  --gap-ratio: 0.075;
   --bounce: 0;
   --font: 'Space Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --backdrop:
@@ -132,7 +132,7 @@
   --accent-rgb: 255, 122, 162;
   --board-radius: 34px;
   --cell-radius-ratio: 0.3;
-  --gap-ratio: 0.12;
+  --gap-ratio: 0.075;
   --bounce: 0.42;
   --font: 'Baloo 2', 'Segoe UI Rounded', 'Nunito', system-ui, sans-serif;
   --backdrop:
@@ -241,7 +241,7 @@
   --accent-rgb: 91, 107, 255;
   --board-radius: 24px;
   --cell-radius-ratio: 0.16;
-  --gap-ratio: 0.12;
+  --gap-ratio: 0.07;
   --bounce: 0;
   --font: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
   --backdrop:
