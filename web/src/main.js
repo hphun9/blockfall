@@ -82,9 +82,10 @@ class App {
     // The tray previews are measured from their slot, and on first paint the
     // slots have not been laid out yet — so measure again once they have.
     requestAnimationFrame(() => {
-      // Chrome height must be published before anything is measured from the
-      // board, or the first paint sizes the tray against a stale board.
-      this.measureChrome();
+      // The board size must be set before anything measures against it: the
+      // tray scales its previews from a board cell, so a stale board here
+      // means a tray drawn at the wrong scale.
+      this.measureBoard();
       this.view.refresh();
       this.view.draw(this.game.cells);
       this.drawTray();
@@ -95,7 +96,7 @@ class App {
     globalThis.addEventListener('resize', () => {
       // Re-measure first: rotating the phone changes how much height the
       // fixed furniture leaves for the board.
-      this.measureChrome();
+      this.measureBoard();
       this.view.refresh();
       this.drawTray();
     });
@@ -352,13 +353,38 @@ class App {
    * stats, goal bar, tray and footer are roughly constant in pixels, so they
    * eat 45% of a 667px phone and only 33% of a 915px one.
    */
-  measureChrome() {
+  /**
+   * Work out how big the board can be, and set it in pixels.
+   *
+   * Done here rather than in CSS because the CSS-only versions relied on how a
+   * browser resolves aspect-ratio inside a flex column, and browsers disagree:
+   * rules that gave square cells in Chrome stretched the board vertically in
+   * Safari on iOS until it covered the tray and the game became unplayable.
+   * One measured number applied to both axes cannot differ by engine.
+   */
+  measureBoard() {
     const app = document.querySelector('.app');
     const wrap = this.el.boardWrap;
     if (!app || !wrap) return;
+
+    // Two passes.
+    //
+    // The wrapper shrinks to fit the board, so its height is downstream of the
+    // answer we are trying to compute — measuring against it means measuring
+    // against the PREVIOUS board size, and the two then chase each other. On a
+    // 500px screen that left the board 8px taller than its row, covering the
+    // tray so the game could not be played at all.
+    //
+    // Collapsing the wrapper to zero first makes the leftover height a real
+    // measurement of everything else, with nothing circular in it. The second
+    // pass applies the result.
+    const previous = wrap.style.height;
+    wrap.style.height = '0px';
+
     const style = getComputedStyle(app);
-    let used = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
     const gap = parseFloat(style.rowGap) || 0;
+
+    let used = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
     let items = 0;
     for (const child of app.children) {
       items++;
@@ -366,12 +392,27 @@ class App {
       used += child.getBoundingClientRect().height;
     }
     used += gap * Math.max(0, items - 1);
-    // A few pixels of slack. Sub-pixel rounding in the flex column means an
-    // exact figure can leave the board one or two pixels taller than the space
-    // it has, and the flex row then squashes it out of square — which puts
-    // every drop slightly off the aimed cell.
-    used += 4;
-    document.documentElement.style.setProperty('--chrome-h', `${Math.round(used)}px`);
+
+    // The app box rather than the viewport: on iOS the visible area is shorter
+    // than window.innerHeight while the address bar is showing, and sizing to
+    // the viewport is what pushed the board over the tray there.
+    const appBox = app.getBoundingClientRect();
+    const availableHeight = appBox.height - used;
+
+    const innerWidth = appBox.width
+      - parseFloat(style.paddingLeft)
+      - parseFloat(style.paddingRight);
+
+    // Square: the smaller of the two, floored so a fractional pixel cannot
+    // round upward into an overlap.
+    const size = Math.floor(Math.min(innerWidth, availableHeight) - 2);
+    if (!Number.isFinite(size) || size < 80) {
+      wrap.style.height = previous;
+      return;
+    }
+
+    document.documentElement.style.setProperty('--board-size', `${size}px`);
+    wrap.style.height = `${size}px`;
   }
 
   render() {

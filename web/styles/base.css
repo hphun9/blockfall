@@ -177,15 +177,14 @@ body::before {
    is no dead space between them. */
 .board-wrap {
   position: relative;
-  /* Purely a positioning layer for the toasts and the replay banner. It takes
-     its size FROM the board rather than giving the board a size — which is
-     what finally removed the dead space: every earlier version made this a
-     size container the board measured against, so the two sized each other in
-     a loop and the surplus had to be parked somewhere. */
+  /* A positioning layer for the toasts and the replay banner, nothing more.
+     align-items is set explicitly: the default is `stretch`, which is what
+     let Safari pull the board taller than it is wide. */
   flex: 0 1 auto;
   min-height: 0;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
 }
 
 /* The tray takes only what it needs; the board above gets the rest. Both were
@@ -201,20 +200,18 @@ body::before {
 
 .board {
   position: relative;
-  /* Square from the width, capped by the height the column has left.
-     `height: auto` matters: an explicit height would beat aspect-ratio and
-     stretch the cells into rectangles, which is what made every drop land off
-     the aimed square. */
-  /* Square from the width, with a viewport-based cap so a short screen shrinks
-     the board instead of squashing it. The cap must NOT come from the parent:
-     making the wrapper a size container puts the two in a sizing loop that
-     Chrome resolves to a 12x12 board. So it is expressed against the viewport
-     minus everything else in the column, measured once in JS — a fixed
-     percentage cannot work, because the fixed parts do not scale with the
-     screen (they cost 45% of a 667px phone but only 33% of a 915px one). */
-  width: min(100%, calc(100dvh - var(--chrome-h, 300px)));
-  height: auto;
+  /* SIZED IN JS, not by the layout engine.
+     Every CSS-only version of this depended on how a browser resolves
+     aspect-ratio inside a flex column, and they do not agree: the same rules
+     that produced square cells in Chrome stretched the board vertically in
+     Safari on iOS until it covered the tray and the game could not be played.
+     --board-size is one number measured from the real box (see measureBoard in
+     main.js) and applied to both axes, so the result cannot differ by engine.
+     The fallback keeps it sane for the single frame before JS runs. */
+  width: var(--board-size, 100%);
+  height: var(--board-size, auto);
   aspect-ratio: 1;
+  flex: 0 0 auto;
   margin: 0 auto;
   background: var(--board);
   border: 1px solid var(--boardBorder);
@@ -517,7 +514,7 @@ body, .board, .slot, .stat, .sheet, .icon-btn, .chip {
   /* Scales with the viewport instead of being pinned at 168px: on a 667px
      phone that fixed height was a quarter of the screen and starved the board.
      The floor keeps the 5-cell bar legible on the smallest devices. */
-  height: clamp(108px, 21vh, 184px);
+  height: clamp(84px, 20vh, 184px);
 }
 
 .slot {

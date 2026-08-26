@@ -24,6 +24,16 @@ const DEVICES = [
   ['Pixel 7', 412, 915],
   ['Galaxy S20', 360, 800],
   ['iPad mini', 768, 1024],
+  // Same phones with the Safari address bar showing. The visible area is
+  // ~145px shorter than the device height, and the board covering the tray was
+  // first reported from a real phone in exactly this state — the full-height
+  // sizes above all passed while the game was unplayable.
+  ['iPhone SE + bar', 375, 553],
+  ['iPhone 12 + bar', 390, 700],
+  ['iPhone 14P + bar', 393, 709],
+  // Deliberately short, to catch sizing that only works when there is plenty
+  // of room to spare.
+  ['very short', 390, 500],
 ];
 
 /** Pairs that must never overlap vertically. */
@@ -34,8 +44,16 @@ const MUST_NOT_OVERLAP = [
   ['hud', '.hud', 'goal bar', '.goal'],
 ];
 
-/** A cell smaller than this is too fiddly to tap accurately. */
-const MIN_CELL = 26;
+/**
+ * A cell smaller than this is too fiddly to tap accurately.
+ *
+ * Scaled to the viewport rather than fixed: a 500px-tall window physically
+ * cannot show eight rows at 26px plus a tray and a footer, so a flat figure
+ * would report an impossibility as a bug and train us to ignore the check.
+ * What matters at those sizes is that nothing OVERLAPS — which is asserted
+ * separately and unconditionally.
+ */
+const minCell = (height) => (height < 620 ? 15 : 26);
 
 (async () => {
   const browser = await chromium.launch({ args: ['--no-sandbox'] });
@@ -123,7 +141,8 @@ const MIN_CELL = 26;
     }
     if (m.scrolls) problems.push('page scrolls');
     if (m.overflows) problems.push('footer past the viewport');
-    if (m.cell < MIN_CELL) problems.push(`cell ${m.cell}px < ${MIN_CELL}px`);
+    const cellFloor = minCell(height);
+    if (m.cell < cellFloor) problems.push(`cell ${m.cell}px < ${cellFloor}px`);
     if (m.overlaps.length) problems.push(...m.overlaps);
     if (errors.length) problems.push(`${errors.length} JS errors`);
 
