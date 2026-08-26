@@ -11,18 +11,14 @@ import { dailySeed, randomSeed, utcDateKey } from './core/rng.js';
 import { Storage } from './core/storage.js';
 import { I18n, detectLocale, SUPPORTED } from './i18n.js';
 import { TIERS, tierFor, nextTier, tierProgress } from './core/goals.js';
+import { SKINS, SKIN_NAMES } from './skins.gen.js';
 import { BoardView, renderTray, trayCellSize } from './ui/board.js';
 import { DragController } from './ui/drag.js';
 import { Sound } from './ui/sound.js';
 
 const $ = (sel) => document.querySelector(sel);
 
-const SKINS = ['nebula', 'mochi', 'prism'];
-const SKIN_NAMES = {
-  nebula: { vi: 'Nebula', en: 'Nebula' },
-  mochi: { vi: 'Mochi', en: 'Mochi' },
-  prism: { vi: 'Prism', en: 'Prism' },
-};
+
 
 class App {
   constructor() {

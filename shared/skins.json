@@ -14,7 +14,7 @@
       "fontStack": "'Space Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif",
       "googleFont": "Space+Grotesk:wght@400;500;600;700",
       "geometry": {
-        "boardRadius": 28,
+        "boardRadius": 14,
         "tileRadiusRatio": 0.22,
         "gapRatio": 0.075,
         "glow": true,
@@ -80,72 +80,210 @@
       ]
     },
     {
-      "id": "mochi",
+      "id": "ink",
       "name": {
-        "vi": "Mochi · Kẹo pastel",
-        "en": "Mochi · Pastel Candy"
+        "vi": "Ink · Giấy & mực",
+        "en": "Ink · Paper & Ink"
       },
       "brightness": "light",
-      "themeColor": "#FFF8F4",
-      "fontStack": "'Baloo 2', 'Segoe UI Rounded', 'Nunito', system-ui, sans-serif",
-      "googleFont": "Baloo+2:wght@500;600;700;800",
+      "themeColor": "#FBFBF9",
+      "fontStack": "'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif",
+      "googleFont": "Outfit:wght@400;500;600;700;800",
       "geometry": {
-        "boardRadius": 34,
-        "tileRadiusRatio": 0.3,
-        "gapRatio": 0.075,
+        "boardRadius": 14,
+        "tileRadiusRatio": 0.2,
+        "gapRatio": 0.08,
         "glow": false,
         "blur": 0,
-        "bounce": 0.42
+        "bounce": 0.15
       },
       "colors": {
-        "bg": "#F4F6FB",
-        "text": "#3D4657",
-        "textMuted": "#7A8496",
-        "surface": "#FFFFFFF2",
+        "bg": "#FBFBF9",
+        "text": "#16181D",
+        "textMuted": "#5F6570",
+        "surface": "#FFFFFF",
         "surfaceStrong": "#FFFFFF",
-        "border": "#E2E7F0",
+        "border": "#DFE1E5",
         "board": "#FFFFFF",
-        "boardBorder": "#D5DCE8",
-        "cell": "#DCE1EA",
-        "accent": "#FF7AA2",
+        "boardBorder": "#D3D6DC",
+        "cell": "#E7E9ED",
+        "accent": "#1F6FEB",
         "accentInk": "#FFFFFF",
-        "accentAlt": "#7ED0EC",
-        "danger": "#FF7A7A",
-        "success": "#5CC98D",
-        "overlay": "#F4F6FBF2"
+        "accentAlt": "#8250DF",
+        "danger": "#D1242F",
+        "success": "#1A7F37",
+        "overlay": "#FBFBF9F2"
       },
       "backdrop": [
         {
-          "color": "#FFE0EC",
-          "x": 0.15,
+          "color": "#E8ECF5",
+          "x": 0.16,
           "y": 0.1,
-          "r": 0.7,
+          "r": 0.72,
           "alpha": 0.55
         },
         {
-          "color": "#DCEBFF",
-          "x": 0.85,
-          "y": 0.22,
-          "r": 0.65,
-          "alpha": 0.55
-        },
-        {
-          "color": "#E8E4FF",
-          "x": 0.5,
-          "y": 0.92,
-          "r": 0.75,
+          "color": "#EFEAF7",
+          "x": 0.86,
+          "y": 0.3,
+          "r": 0.62,
           "alpha": 0.45
+        },
+        {
+          "color": "#E9F2EC",
+          "x": 0.5,
+          "y": 0.94,
+          "r": 0.7,
+          "alpha": 0.4
         }
       ],
       "blocks": [
-        "#FF6E93",
-        "#F59A16",
-        "#2BBE8C",
-        "#5AACF7",
-        "#B57BF5",
-        "#FF8A6B",
-        "#17ABA8",
-        "#FF7ABE"
+        "#D1242F",
+        "#E36209",
+        "#1A7F37",
+        "#1F6FEB",
+        "#8250DF",
+        "#BF3989",
+        "#0F766E",
+        "#A16207"
+      ]
+    },
+    {
+      "id": "slate",
+      "name": {
+        "vi": "Slate · Xám dịu",
+        "en": "Slate · Soft Grey"
+      },
+      "brightness": "dark",
+      "themeColor": "#1A1D24",
+      "fontStack": "'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif",
+      "googleFont": "Plus+Jakarta+Sans:wght@400;500;600;700;800",
+      "geometry": {
+        "boardRadius": 14,
+        "tileRadiusRatio": 0.24,
+        "gapRatio": 0.08,
+        "glow": false,
+        "blur": 0,
+        "bounce": 0.2
+      },
+      "colors": {
+        "bg": "#1A1D24",
+        "text": "#F2F4F8",
+        "textMuted": "#A3ACBD",
+        "surface": "#FFFFFF12",
+        "surfaceStrong": "#FFFFFF1C",
+        "border": "#FFFFFF24",
+        "board": "#232733",
+        "boardBorder": "#353B4A",
+        "cell": "#2E3442",
+        "accent": "#4C9AFF",
+        "accentInk": "#08172E",
+        "accentAlt": "#B07CFF",
+        "danger": "#FF6B6B",
+        "success": "#4ADE80",
+        "overlay": "#1A1D24F2"
+      },
+      "backdrop": [
+        {
+          "color": "#2B3550",
+          "x": 0.14,
+          "y": 0.12,
+          "r": 0.68,
+          "alpha": 0.5
+        },
+        {
+          "color": "#38304F",
+          "x": 0.86,
+          "y": 0.28,
+          "r": 0.6,
+          "alpha": 0.42
+        },
+        {
+          "color": "#263D3E",
+          "x": 0.52,
+          "y": 0.92,
+          "r": 0.66,
+          "alpha": 0.38
+        }
+      ],
+      "blocks": [
+        "#FF7A7A",
+        "#FFB454",
+        "#5ED89B",
+        "#5AB4FF",
+        "#B98BFF",
+        "#FF8FB8",
+        "#4ECDC4",
+        "#FFD166"
+      ]
+    },
+    {
+      "id": "grove",
+      "name": {
+        "vi": "Grove · Rừng dịu",
+        "en": "Grove · Quiet Forest"
+      },
+      "brightness": "dark",
+      "themeColor": "#101A16",
+      "fontStack": "'Nunito', 'Segoe UI', system-ui, sans-serif",
+      "googleFont": "Nunito:wght@400;600;700;800",
+      "geometry": {
+        "boardRadius": 14,
+        "tileRadiusRatio": 0.28,
+        "gapRatio": 0.08,
+        "glow": true,
+        "blur": 0,
+        "bounce": 0.3
+      },
+      "colors": {
+        "bg": "#101A16",
+        "text": "#E8F5EC",
+        "textMuted": "#93AFA0",
+        "surface": "#FFFFFF10",
+        "surfaceStrong": "#FFFFFF1A",
+        "border": "#FFFFFF22",
+        "board": "#141F1A",
+        "boardBorder": "#31453A",
+        "cell": "#28382F",
+        "accent": "#4ADE80",
+        "accentInk": "#052014",
+        "accentAlt": "#FBBF24",
+        "danger": "#F87171",
+        "success": "#4ADE80",
+        "overlay": "#101A16F2"
+      },
+      "backdrop": [
+        {
+          "color": "#1E4536",
+          "x": 0.15,
+          "y": 0.12,
+          "r": 0.66,
+          "alpha": 0.5
+        },
+        {
+          "color": "#2A4A2E",
+          "x": 0.85,
+          "y": 0.26,
+          "r": 0.58,
+          "alpha": 0.4
+        },
+        {
+          "color": "#3E4A22",
+          "x": 0.5,
+          "y": 0.9,
+          "r": 0.64,
+          "alpha": 0.35
+        }
+      ],
+      "blocks": [
+        "#4ADE80",
+        "#FBBF24",
+        "#38BDF8",
+        "#F472B6",
+        "#A78BFA",
+        "#FB923C",
+        "#2DD4BF",
+        "#FACC15"
       ]
     },
     {
@@ -159,7 +297,7 @@
       "fontStack": "'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif",
       "googleFont": "Be+Vietnam+Pro:wght@500;700",
       "geometry": {
-        "boardRadius": 24,
+        "boardRadius": 14,
         "tileRadiusRatio": 0.16,
         "gapRatio": 0.07,
         "glow": false,
@@ -221,7 +359,7 @@
         "#2DB8F5",
         "#F2547D",
         "#57C77A",
-        "#F0A93B"
+        "#E08A0F"
       ]
     }
   ]
